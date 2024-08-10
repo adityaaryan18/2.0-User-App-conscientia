@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "629062106224",
+    "project_id": "consx-user-app",
+    "storage_bucket": "consx-user-app.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:629062106224:android:daad39ab134787703208b5",
+        "android_client_info": {
+          "package_name": "com.example.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCh_yxu-Dih2J9sNLF7R9HrPSsvgjRACGw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
