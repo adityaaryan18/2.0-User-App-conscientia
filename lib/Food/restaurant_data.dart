@@ -377,5 +377,3 @@ final List<String> images = [
 ];
 
 final PageController pageController = PageController();
-
-

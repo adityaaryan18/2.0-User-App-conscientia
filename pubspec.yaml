@@ -93,6 +93,12 @@ flutter:
         - asset: assets/fonts/nulshock bd.otf
           weight: 700
 
+    - family: Dune
+      fonts:
+        - asset: assets/fonts/Dune_Rise.ttf
+          weight: 700
+
+
 
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/custom-fonts/#from-packages

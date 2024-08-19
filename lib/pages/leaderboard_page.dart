@@ -102,7 +102,7 @@ class _LeaderboardPageState extends State<LeaderboardPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Leaderboard'),
+        title: const Text('Leaderboard', style: TextStyle(fontFamily: 'Nasa', fontSize: 17),),
         actions: [
           IconButton(
             icon: const Icon(Icons.info_outline),

@@ -13,6 +13,9 @@ class FirebaseAuthMethods {
   // using null check operator since this method should be called only
   // when the user is logged in
   User get user => _auth.currentUser!;
+  
+  // Add this method to get the UID
+  String get uid => _auth.currentUser?.uid ?? '';
 
   // STATE PERSISTENCE STREAM
   Stream<User?> get authState => FirebaseAuth.instance.authStateChanges();
