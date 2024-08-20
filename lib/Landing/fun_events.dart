@@ -25,7 +25,7 @@ class _FunEventsState extends State<FunEvents> {
   @override
   void initState() {
     super.initState();
-    _timer = Timer.periodic(const Duration(seconds: 2), (Timer timer) {
+    _timer = Timer.periodic(const Duration(seconds: 3), (Timer timer) {
       if (_currentPage < funEvents.length - 1) {
         _currentPage++;
       } else {
@@ -34,7 +34,7 @@ class _FunEventsState extends State<FunEvents> {
 
       _pageController.animateToPage(
         _currentPage,
-        duration: const Duration(milliseconds: 300),
+        duration: const Duration(milliseconds: 400),
         curve: Curves.easeIn,
       );
     });

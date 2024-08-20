@@ -4,6 +4,7 @@ import 'package:app/Landing/create_team_section.dart';
 import 'package:app/Landing/fun_events.dart';
 import 'package:app/Landing/my_activity.dart';
 import 'package:app/Landing/order_stat_dash.dart';
+import 'package:app/Landing/upcoming_event.dart';
 import 'package:app/Landing/user_card.dart';
 import 'package:app/Merch/merch_home.dart';
 import 'package:app/main.dart';
@@ -306,6 +307,8 @@ class DashboardSection extends StatelessWidget {
           ),
 
           FunEvents(),
+
+          UpcomingEvents()
         ],
       ),
     );
