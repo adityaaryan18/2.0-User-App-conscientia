@@ -7,6 +7,7 @@ import 'package:app/Landing/order_stat_dash.dart';
 import 'package:app/Landing/upcoming_event.dart';
 import 'package:app/Landing/user_card.dart';
 import 'package:app/Merch/merch_home.dart';
+import 'package:app/Merch/merch_widget.dart';
 import 'package:app/main.dart';
 import 'package:flutter/material.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
@@ -44,13 +45,15 @@ class _DashboardPageState extends State<DashboardPage> {
               fit: BoxFit.cover,
             ),
             Scaffold(
-              backgroundColor: Colors.transparent, // Make Scaffold background transparent
+              backgroundColor: Colors.black.withOpacity(0.3), // Make Scaffold background transparent
               key: _scaffoldKey,
               drawer: Drawer(
+                backgroundColor: Color.fromARGB(255, 14, 14, 14),
                 child: SafeArea(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      SizedBox(height: 20,),
                       const Center(
                         child: Text(
                           'ASTRAL ARMAGEDDON',
@@ -110,6 +113,7 @@ class _DashboardPageState extends State<DashboardPage> {
               body: CustomScrollView(
                 slivers: [
                   SliverAppBar(
+                    surfaceTintColor: Colors.black,
                     floating: true,
                     snap: true,
                     title: const Text(
@@ -121,12 +125,12 @@ class _DashboardPageState extends State<DashboardPage> {
                       ),
                     ),
                     leading: IconButton(
-                      icon: const Icon(Icons.menu, color: Colors.white),
+                      icon: const Icon(Icons.menu, color: Colors.red, size: 30,),
                       onPressed: () {
                         _scaffoldKey.currentState?.openDrawer();
                       },
                     ),
-                    backgroundColor: Colors.black.withOpacity(0.3), // Transparent with some opacity
+                    backgroundColor: Colors.black.withOpacity(0.4), // Transparent with some opacity
                     elevation: 0,
                   ),
                   SliverPersistentHeader(
@@ -135,7 +139,7 @@ class _DashboardPageState extends State<DashboardPage> {
                       minHeight: 60.0,
                       maxHeight: 60.0,
                       child: Container(
-                        color: Colors.black.withOpacity(0.3), // Transparent with some opacity
+                        color: Colors.black.withOpacity(0.4), // Transparent with some opacity
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                           children: [
@@ -194,8 +198,8 @@ class _DashboardPageState extends State<DashboardPage> {
       },
       child: Card(
         color: isSelected
-            ? Colors.redAccent.withOpacity(0.7)
-            : const Color(0xFF1F1F1F).withOpacity(0.7),
+            ? const Color.fromARGB(255, 254, 63, 63).withOpacity(0.7)
+            : Color.fromARGB(255, 59, 59, 59).withOpacity(0.7),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
         child: SizedBox(
           height: 35,
@@ -299,16 +303,27 @@ class DashboardSection extends StatelessWidget {
 
           // User Card User Interface and APIs
           UserCard(),
+          
 
           // OrderStatus Live Update for Users
           Padding(
             padding: const EdgeInsets.all(8.0),
-            child: OrderList(),
+
+            child: Column(
+              children: [
+                OrderList(),
+              ],
+            ),
           ),
 
           FunEvents(),
 
-          UpcomingEvents()
+          UpcomingEvents(),
+
+
+          MerchWidget()
+
+
         ],
       ),
     );
@@ -345,4 +360,3 @@ class _SliverAppBarDelegate extends SliverPersistentHeaderDelegate {
         child != oldDelegate.child;
   }
 }
-

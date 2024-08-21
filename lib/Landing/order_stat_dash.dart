@@ -74,6 +74,8 @@ class OrderList extends StatelessWidget {
         final order = filteredOrders[index];
         return GestureDetector(
           onTap: () {
+            // Navigate to the order details page (replace with your navigation logic)
+
             Navigator.of(context).push(
               MaterialPageRoute(
                   builder: (context) => MerchandiseScreen(),

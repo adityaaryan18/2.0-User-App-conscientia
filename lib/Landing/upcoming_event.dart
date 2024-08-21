@@ -12,8 +12,8 @@ class UpcomingEvents extends StatefulWidget {
 
 class _UpcomingEventsState extends State<UpcomingEvents> {
   static const List<String> events = [
-    "Fun Event 1",
-    "Fun Event 2",
+    "Upcoming Event 1",
+    "Upcoming Event 2",
     "Fun Event 3",
     "Fun Event 4",
     "Fun Event 5",
@@ -55,7 +55,7 @@ class _UpcomingEventsState extends State<UpcomingEvents> {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        SizedBox(height: 10,),
+        SizedBox(height: 20,),
         Text(
           'UPCOMING EVENTS',
           style: GoogleFonts.rubik(
@@ -64,6 +64,7 @@ class _UpcomingEventsState extends State<UpcomingEvents> {
             fontWeight: FontWeight.bold,
           ),
         ),
+        SizedBox(height: 10,),
         SizedBox(
           height: 200, // Adjust height according to your design
           child: PageView.builder(
@@ -81,7 +82,7 @@ class _UpcomingEventsState extends State<UpcomingEvents> {
                 children: [
                   Expanded(
                     child: EventCard(
-                      imgURL: "assets/images/event_image.png",
+                      imgURL: "assets/images/sh2.png",
                       eventName: events[index * 2],
                       colorUp: Colors.blueAccent,
                       colorDown: Colors.lightBlue,
@@ -92,7 +93,7 @@ class _UpcomingEventsState extends State<UpcomingEvents> {
                   if (index * 2 + 1 < events.length)
                     Expanded(
                       child: EventCard(
-                        imgURL: "assets/images/event_image.png",
+                        imgURL: "assets/images/sh2.png",
                         eventName: events[index * 2 + 1],
                         colorUp: Colors.redAccent,
                         colorDown: Colors.pinkAccent,

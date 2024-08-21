@@ -89,6 +89,7 @@ class UserProvider with ChangeNotifier {
 }
 class UserModel {
   final String id;
+  final String forceId;
   final String username;
   final String? firstName;
   final String? lastName;
@@ -113,6 +114,7 @@ class UserModel {
 
   UserModel({
     required this.id,
+    required this.forceId,
     required this.username,
     this.firstName,
     this.lastName,
@@ -140,6 +142,7 @@ class UserModel {
     return UserModel(
       id: json['_id'],
       username: json['username'],
+      forceId: json['forceId'],
       firstName: json['firstName'],
       lastName: json['lastName'],
       mobile: json['mobile'],

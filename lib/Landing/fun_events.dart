@@ -51,7 +51,9 @@ class _FunEventsState extends State<FunEvents> {
   Widget build(BuildContext context) {
     return Column(
       children: [
+        SizedBox(height: 20,),
         Text('GEAR UP FOR ACTION', style: GoogleFonts.rubik(color: Colors.white, fontSize: 15, fontWeight: FontWeight.bold),),
+        SizedBox(height: 10,),
         SizedBox(
           height: 200, // Adjust height according to your design
           child: PageView.builder(

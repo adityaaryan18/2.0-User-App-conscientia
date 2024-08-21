@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:app/main.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:http/http.dart' as http;
 import 'package:firebase_auth/firebase_auth.dart';
@@ -17,95 +18,97 @@ class _CreateTeamSectionState extends State<CreateTeamSection> {
   bool isApprovedSelected = true;
   final textEditingController = TextEditingController();
 
-
-void addToTeam(String userId, String friendId) async {
-  try {
-
-    final response = await http.post(
-      Uri.parse(
-          "https://conscientia2k24-dev-api.vercel.app/api/dashboard/addtoteam"),
-      body: json.encode({'userId': userId, 'friendId': friendId}),
-    );
-    print('API TO ADD IN TEAM SENT SUCCESSFULLY');
-    print(response.statusCode);
-
-    if (response.statusCode == 200) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Your Request has been sent')),
+  void addToTeam(String userId, String friendId) async {
+    try {
+      final response = await http.post(
+        Uri.parse(
+            "https://conscientia2k24-dev-api.vercel.app/api/dashboard/addtoteam"),
+        body: json.encode({'userId': userId, 'friendId': friendId}),
       );
-      setState(() {});
-    } else {
+
+      print('API TO ADD IN TEAM SENT SUCCESSFULLY');
+
+      if (response.statusCode == 200) {
+        final responseData = json.decode(response.body);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(responseData['msg'])),
+        );
+        setState(() {}); // Assuming this is within a stateful widget
+      } else {
+        final responseData = json.decode(response.body);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(responseData['msg'])),
+        );
+      }
+    } catch (e) {
+      Navigator.of(context)
+          .pop(); // Ensure the loading dialog is closed in case of error
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to send request')),
-      );
-    }
-  } 
-
-  catch (e) {
-    Navigator.of(context).pop(); // Ensure the loading dialog is closed in case of error
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Error fetching user data: $e')),
-    );
-  }
-}
-
-void addToTeamFromPending(String userId, String friendId) async {
-  try {
-    
-    final response = await http.post(
-      Uri.parse(
-          "https://conscientia2k24-dev-api.vercel.app/api/dashboard/acceptteam"),
-      body: json.encode({'userId': userId, 'friendId': friendId}),
-    );
-    print('OYEE API chala gaya');
-    print(response.statusCode);
-
-
-    if (response.statusCode == 200) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Your Request has been sent')),
-      );
-      setState(() {});
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to send request')),
+        SnackBar(content: Text('Error fetching user data: $e')),
       );
     }
-  } catch (e) {
-    Navigator.of(context).pop(); // Ensure the loading dialog is closed in case of error
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Error fetching user data: $e')),
-    );
   }
-}
 
-void removeFromTeam(String userId, String friendId) async {
-  try {
-
-
-    final response = await http.post(
-      Uri.parse(
-          "https://conscientia2k24-dev-api.vercel.app/api/dashboard/removeteam"),
-      body: json.encode({'userId': userId, 'friendId': friendId}),
-    );
-
-    if (response.statusCode == 200) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('User has been removed from the team')),
+  void addToTeamFromPending(String userId, String friendId) async {
+    try {
+      final response = await http.post(
+        Uri.parse(
+            "https://conscientia2k24-dev-api.vercel.app/api/dashboard/acceptteam"),
+        body: json.encode({'userId': userId, 'friendId': friendId}),
       );
-      setState(() {});
-    } else {
+      print('OYEE API chala gaya');
+      print(response.statusCode);
+      print(response);
+
+      if (response.statusCode == 200) {
+        final responseData = json.decode(response.body);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(responseData['msg'])),
+        );
+        setState(() {}); // Assuming this is within a stateful widget
+      } else {
+        final responseData = json.decode(response.body);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(responseData['msg'])),
+        );
+      }
+    } catch (e) {
+      Navigator.of(context)
+          .pop(); // Ensure the loading dialog is closed in case of error
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to remove user from the team')),
+        SnackBar(content: Text('Error fetching user data: $e')),
       );
     }
-  } catch (e) {
-    Navigator.of(context).pop(); // Ensure the loading dialog is closed in case of error
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Error removing user: $e')),
-    );
   }
-}
+
+  void removeFromTeam(String userId, String friendId) async {
+    try {
+      final response = await http.post(
+        Uri.parse(
+            "https://conscientia2k24-dev-api.vercel.app/api/dashboard/removeteam"),
+        body: json.encode({'userId': userId, 'friendId': friendId}),
+      );
+
+      if (response.statusCode == 200) {
+        final responseData = json.decode(response.body);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(responseData['msg'])),
+        );
+        setState(() {}); // Assuming this is within a stateful widget
+      } else {
+        final responseData = json.decode(response.body);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(responseData['msg'])),
+        );
+      }
+    } catch (e) {
+      Navigator.of(context)
+          .pop(); // Ensure the loading dialog is closed in case of error
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error fetching user data: $e')),
+      );
+    }
+  }
 
   Future<void> _showLoadingDialog() {
     return showDialog<void>(
@@ -168,7 +171,6 @@ void removeFromTeam(String userId, String friendId) async {
                         ),
                       ),
                       const SizedBox(height: 10),
-
                       Card(
                         elevation: 5,
                         shape: RoundedRectangleBorder(
@@ -210,7 +212,7 @@ void removeFromTeam(String userId, String friendId) async {
                       if (isApprovedSelected)
                         Column(
                           children: [
-                            Text("This is your Team \n Select Team members "),
+                            FittedBox(child: Text(myAllies.length==0? 'Search Your friend to Add them to your team' : "Add them during Event Registration")),
                             ListView.builder(
                               shrinkWrap: true,
                               physics: NeverScrollableScrollPhysics(),
@@ -219,6 +221,7 @@ void removeFromTeam(String userId, String friendId) async {
                                 final ally =
                                     myAllies[index] as Map<String, dynamic>;
                                 return _buildPersonCard(
+                                  ally['firstName']?? 'Unknown',
                                   ally['username'] ?? 'Unknown',
                                   ally['profile'] ??
                                       'assets/images/profile_default.png',
@@ -228,22 +231,27 @@ void removeFromTeam(String userId, String friendId) async {
                             ),
                           ],
                         )
-                        
                       else
-                        ListView.builder(
-                          shrinkWrap: true,
-                          physics: NeverScrollableScrollPhysics(),
-                          itemCount: myRequests.length,
-                          itemBuilder: (context, index) {
-                            final request =
-                                myRequests[index] as Map<String, dynamic>;
-                            return _buildPersonCard(
-                              request['username'] ?? 'Unknown',
-                              request['profile'] ??
-                                  'assets/images/profile_default.png',
-                              isApproved: false,
-                            );
-                          },
+                        Column(
+                          children: [
+                            FittedBox(child: Text(myRequests.length==0? "People who sent you request will show up here": "People waiting for your Approval")),
+                            ListView.builder(
+                              shrinkWrap: true,
+                              physics: NeverScrollableScrollPhysics(),
+                              itemCount: myRequests.length,
+                              itemBuilder: (context, index) {
+                                final request =
+                                    myRequests[index] as Map<String, dynamic>;
+                                return _buildPersonCard(
+                                  request['firstName']??"Unknown",
+                                  request['username'] ?? 'Unknown',
+                                  request['profile'] ??
+                                      'assets/images/profile_default.png',
+                                  isApproved: false,
+                                );
+                              },
+                            ),
+                          ],
                         ),
                     ],
                   ),
@@ -255,7 +263,7 @@ void removeFromTeam(String userId, String friendId) async {
       ),
     );
   }
-  
+
   Widget _buildSectionCard(String title, bool isSelected, VoidCallback onTap) {
     return GestureDetector(
       onTap: onTap,
@@ -284,23 +292,28 @@ void removeFromTeam(String userId, String friendId) async {
     );
   }
 
-  Widget _buildPersonCard(String name, String imagePath,
+  Widget _buildPersonCard(String firstname,String username, String imagePath,
       {required bool isApproved}) {
     return GestureDetector(
       onTap: () {
-        _showPersonDialog(name, isApproved);
+        _showPersonDialog(firstname,username, isApproved);
       },
       child: Card(
         elevation: 5,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
         color: Colors.black.withOpacity(0.3),
         child: ListTile(
-          leading: Icon(
+          trailing: Icon(
             isApproved ? Icons.remove : Icons.add,
             color: isApproved ? Colors.red : Colors.green,
           ),
-          title: Text(name, style: TextStyle(color: Colors.white)),
-          trailing: CircleAvatar(
+          title: Column(
+            children: [
+              Text(firstname.toUpperCase(), style: GoogleFonts.rubik(color: Colors.white, fontWeight: FontWeight.bold)),
+              FittedBox(child: Text(username, style: GoogleFonts.rubik(color: Colors.white, fontSize: 12))),
+            ],
+          ),
+          leading: CircleAvatar(
             backgroundImage: imagePath.startsWith('http')
                 ? NetworkImage(imagePath)
                 : AssetImage(imagePath) as ImageProvider,
@@ -310,17 +323,21 @@ void removeFromTeam(String userId, String friendId) async {
     );
   }
 
-  void _showPersonDialog(String name, bool isApproved, ) {
+  void _showPersonDialog(
+    String firstname,
+    String username,
+    bool isApproved,
+  ) {
     String dialogMessage = isApproved
-        ? 'Warrior! Do you want to eliminate "$name" from your team?'
-        : 'Warrior! Do you want to include "$name" into your team?';
-        
+        ? 'Warrior! \nDo you want to eliminate "$firstname" from your team?'
+        : 'Warrior! \nDo you want to include "$firstname" into your team?';
+
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
           backgroundColor: Colors.black.withOpacity(0.8),
-          title: Text(name, style: TextStyle(color: Colors.white)),
+          title: Text(firstname, style: TextStyle(color: Colors.white)),
           content: Text(dialogMessage, style: TextStyle(color: Colors.white70)),
           actions: [
             TextButton(
@@ -333,10 +350,9 @@ void removeFromTeam(String userId, String friendId) async {
               onPressed: () {
                 Navigator.of(context).pop();
                 if (isApproved) {
-                  removeFromTeam(
-                      context.read<User?>()?.uid ?? '', name);
+                  removeFromTeam(context.read<User?>()?.uid ?? '', username);
                 } else {
-                  addToTeamFromPending(context.read<User?>()?.uid ?? '', name);
+                  addToTeamFromPending(context.read<User?>()?.uid ?? '', username);
                 }
               },
               child: Text('Yes', style: TextStyle(color: Colors.green)),

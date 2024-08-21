@@ -12,6 +12,7 @@ import 'package:provider/provider.dart';
 import 'package:salomon_bottom_bar/salomon_bottom_bar.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:http/http.dart' as http;
+import 'package:socket_io_client/socket_io_client.dart' as IO;
 
 class HomePage extends StatefulWidget {
   @override
@@ -20,6 +21,13 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   int _selectedIndex = 0;
+  IO.Socket? socket;
+
+  @override
+  void initState() {
+    super.initState();
+    initializeSocket();
+  }
 
   bool canpop() {
     if (_selectedIndex == 0) {
@@ -28,7 +36,6 @@ class _HomePageState extends State<HomePage> {
       return false;
     }
   }
-  
 
   final List<Widget> _pages = [
     DashboardPage(),
@@ -48,10 +55,9 @@ class _HomePageState extends State<HomePage> {
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         final user = UserModel.fromJson(data['user']);
-        print(user.toJson());
-
-        // Store the user data in the provider
         context.read<UserProvider>().setUser(user);
+        // Initialize socket after fetching user data
+        initializeSocket(uid);
       } else {
         print('Error: ${response.body}');
       }
@@ -60,14 +66,57 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
+  void initializeSocket([String? uid]) {
+    socket = IO.io('https://socketserver-conscientia2k24-o343q.ondigitalocean.app/', <String, dynamic>{
+      'transports': ['websocket'],
+      'autoConnect': false,
+    });
+
+    socket?.connect();
+
+    socket?.onConnect((_) {
+      print('Connected to socket');
+      // Subscribe to the user's room or listen for specific events
+      if (uid != null) {
+        socket?.emit('join', uid);
+      }
+    });
+
+socket?.on('userUpdate', (data) {
+  print("Oyee DATA aa gya");
+  print(data);
+
+  // Parse the updated user data from the socket response
+  final updatedUser = UserModel.fromJson(data);
+
+  // Get the Firebase user ID of the currently logged-in user
+  final firebaseUser = context.read<User?>();
+
+  if (firebaseUser != null && updatedUser.userId == firebaseUser.uid) {
+    // Update the user details only if the Firebase IDs match
+    context.read<UserProvider>().setUser(updatedUser);
+  } else {
+    print('Firebase ID mismatch: update ignored.');
+  }
+});
+
+    socket?.onDisconnect((_) {
+      print('Disconnected from socket');
+    });
+  }
+
+  @override
+  void dispose() {
+    socket?.dispose();
+    super.dispose();
+  }
+
+
   @override
   Widget build(BuildContext context) {
     final firebaseUser = context.watch<User?>();
     if (firebaseUser != null) {
-      // User is logged in, get the UID
       final uid = firebaseUser.uid;
-
-      // Fetch user details based on UID
       getUserDetails(uid);
 
       return PopScope(

@@ -159,6 +159,23 @@ class UserCard extends StatelessWidget {
                                   ],
                                 ),
                               ),
+                              Center(
+                                child: Row(
+                                  children: [
+                                    Text(
+                                      ' Force ID:  ',
+                                      style: GoogleFonts.rubik(
+                                          fontWeight: FontWeight.bold),
+                                    ),
+                                    FittedBox(
+                                      child: Center(
+                                        child: Text(user?.forceId ?? " ",
+                                            style: GoogleFonts.gruppo()),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
                               SizedBox(height: 5),
                               Align(
                                 alignment: Alignment.centerLeft,
