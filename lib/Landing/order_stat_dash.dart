@@ -1,3 +1,4 @@
+import 'package:app/Landing/update_user.dart';
 import 'package:app/Merch/merch_home.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -78,7 +79,7 @@ class OrderList extends StatelessWidget {
 
             Navigator.of(context).push(
               MaterialPageRoute(
-                  builder: (context) => MerchandiseScreen(),
+                  builder: (context) => UserProfilePage(),
                   fullscreenDialog: true),
             );
           },

@@ -83,7 +83,7 @@ class _HomePageState extends State<HomePage> {
     });
 
 socket?.on('userUpdate', (data) {
-  print("Oyee DATA aa gya");
+  print("Data recieved using socket");
   print(data);
 
   // Parse the updated user data from the socket response
