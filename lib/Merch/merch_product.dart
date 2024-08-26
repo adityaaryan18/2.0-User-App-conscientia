@@ -1,6 +1,11 @@
+import 'dart:convert';
 
+import 'package:app/Merch/confirmation_payment.dart';
+import 'package:app/main.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:http/http.dart' as http;
+import 'package:provider/provider.dart';
 
 class ProductDetailScreen extends StatefulWidget {
   final String name;
@@ -24,7 +29,6 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   double get totalPrice => double.parse(widget.price) * quantity;
   String selectedSize = 'M'; // Default size
 
-
   final PageController _pageController = PageController();
   int _currentPage = 0;
 
@@ -44,9 +48,38 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     super.dispose();
   }
 
+  void initPay(double amount, String receipt, Map userDatabaseId,
+      List<Map> items) async {
+    try {
+      final response = await http.post(
+          Uri.parse(
+              "https://conscientia2k24-dev-api.vercel.app/api/payments/initPayment"),
+          body: json.encode({
+            "amount": amount, //amount to be paid (including taxes),
+            "receipt":
+                receipt, // a receipt for payment usually generated with date,
+            "user": userDatabaseId, //whole user object,
+            "items": items,
+            'category': 'merch' //array of items
+          }));
+
+      if (response.statusCode == 200) {
+        debugPrint(response.body);
+      } else {
+        debugPrint("status code is different");
+      }
+    } catch (e) {
+      print(e.toString());
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
+
+    final userProvider = context.watch<UserProvider>();
+    final user = userProvider.user;
+    final userDatabaseId = user?.id;
 
     return Scaffold(
       backgroundColor: Color.fromARGB(255, 24, 24, 24),
@@ -92,7 +125,6 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                       ],
                     ),
                   ),
-          
                   Positioned(
                     bottom: 0,
                     left: 0,
@@ -108,7 +140,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                           width: _currentPage == index ? 16.0 : 8.0,
                           decoration: BoxDecoration(
                             color: _currentPage == index
-                                ? const Color.fromARGB(255, 188,232,90).withOpacity(0.8)
+                                ? const Color.fromARGB(255, 188, 232, 90)
+                                    .withOpacity(0.8)
                                 : Colors.white.withOpacity(0.5),
                             borderRadius: BorderRadius.circular(12),
                           ),
@@ -133,7 +166,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
               style: GoogleFonts.teko(
                 fontWeight: FontWeight.bold,
                 fontSize: size.width * 0.05,
-                color: const Color.fromARGB(255, 188,232,90),
+                color: const Color.fromARGB(255, 188, 232, 90),
               ),
             ),
             SizedBox(height: size.height * 0.01),
@@ -167,12 +200,10 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                         selectedSize = size;
                       });
                     },
-                    selectedColor: const Color.fromARGB(255, 188,232,90),
+                    selectedColor: const Color.fromARGB(255, 188, 232, 90),
                     backgroundColor: Colors.grey[800],
-                    labelStyle: GoogleFonts.rubik(
-                      color: Colors.white,
-                      fontSize: 16
-                    ),
+                    labelStyle:
+                        GoogleFonts.rubik(color: Colors.white, fontSize: 16),
                   ),
                 );
               }).toList(),
@@ -210,10 +241,22 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                 ),
                 ElevatedButton(
                   onPressed: () {
-                    // Add "Buy Now" functionality
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => ConfirmationPage(
+                          quantity: quantity,
+                          name: widget.name,
+                          size: selectedSize,
+                          totalPrice: totalPrice,
+                          imageUrl: widget.image,
+                        ),
+                      ),
+                    );
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color.fromARGB(255, 188,232,90).withOpacity(0.8),
+                    backgroundColor: const Color.fromARGB(255, 188, 232, 90)
+                        .withOpacity(0.8),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(20),
                     ),
@@ -233,7 +276,9 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                 ),
               ],
             ),
-            SizedBox(height: 10,),
+            SizedBox(
+              height: 10,
+            ),
           ],
         ),
       ),

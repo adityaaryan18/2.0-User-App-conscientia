@@ -22,7 +22,7 @@ class _CreateTeamSectionState extends State<CreateTeamSection> {
     try {
       final response = await http.post(
         Uri.parse(
-            "https://conscientia2k24-dev-api.vercel.app/api/dashboard/addtoteam"),
+            "https://conscientia.co.in/api/dashboard/addtoteam"),
         body: json.encode({'userId': userId, 'friendId': friendId}),
       );
 
@@ -53,7 +53,7 @@ class _CreateTeamSectionState extends State<CreateTeamSection> {
     try {
       final response = await http.post(
         Uri.parse(
-            "https://conscientia2k24-dev-api.vercel.app/api/dashboard/acceptteam"),
+            "https://conscientia.co.in/api/dashboard/acceptteam"),
         body: json.encode({'userId': userId, 'friendId': friendId}),
       );
       print('OYEE API chala gaya');
@@ -85,7 +85,7 @@ class _CreateTeamSectionState extends State<CreateTeamSection> {
     try {
       final response = await http.post(
         Uri.parse(
-            "https://conscientia2k24-dev-api.vercel.app/api/dashboard/removeteam"),
+            "https://conscientia.co.in/api/dashboard/removeteam"),
         body: json.encode({'userId': userId, 'friendId': friendId}),
       );
 

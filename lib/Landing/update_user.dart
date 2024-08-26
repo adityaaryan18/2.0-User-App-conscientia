@@ -13,7 +13,7 @@ class UserProfilePage extends StatelessWidget {
     try {
       final response = await http.post(
         Uri.parse(
-            "https://conscientia2k24-dev-api.vercel.app/api/updateUser/updateName"),
+            "https://conscientia.co.in/api/updateUser/updateName"),
         body: json.encode(
             {'firstName': firstname, 'lastname': lastname, 'userId': uid}),
       );
@@ -33,7 +33,7 @@ class UserProfilePage extends StatelessWidget {
     try {
       final response = await http.post(
         Uri.parse(
-            "https://conscientia2k24-dev-api.vercel.app/api/updateUser/updateProfile"),
+            "https://conscientia.co.in/api/updateUser/updateProfile"),
         body: json.encode({
           'imageUrl': imageUrl,
           'userId': uid,
@@ -58,7 +58,7 @@ class UserProfilePage extends StatelessWidget {
     try {
       final response = await http.post(
         Uri.parse(
-            "https://conscientia2k24-dev-api.vercel.app/api/updateUser/updateOther"),
+            "https://conscientia.co.in/api/updateUser/updateOther"),
         body: json.encode({
           'userId': uid,
           'mobile': mobile,
@@ -83,7 +83,7 @@ class UserProfilePage extends StatelessWidget {
     try {
       final response = await http.post(
         Uri.parse(
-            "https://conscientia2k24-dev-api.vercel.app/api/updateUser/updateOther"),
+            "https://conscientia.co.in/api/updateUser/updateOther"),
         body: json.encode({
           'userId': uid,
           'college': college,
@@ -108,7 +108,7 @@ class UserProfilePage extends StatelessWidget {
     try {
       final response = await http.post(
         Uri.parse(
-            "https://conscientia2k24-dev-api.vercel.app/api/updateUser/updateOther"),
+            "https://conscientia.co.in/api/updateUser/updateOther"),
         body: json.encode({
           'userId': uid,
           'collegeId': collegeId,
@@ -134,7 +134,7 @@ class UserProfilePage extends StatelessWidget {
     try {
       final response = await http.post(
         Uri.parse(
-            "https://conscientia2k24-dev-api.vercel.app/api/updateUser/updateOther"),
+            "https://conscientia.co.in/api/updateUser/updateOther"),
         body: json.encode({
           'userId': uid,
           'aadhar': aadhar,
@@ -322,11 +322,9 @@ class UserProfilePage extends StatelessWidget {
                 style: GoogleFonts.rubik(color: Colors.white54, fontSize: 12),
               ),
               const SizedBox(height: 5),
-              FittedBox(
-                child: Text(
-                  value,
-                  style: GoogleFonts.rubik(color: Colors.white, fontSize: 16),
-                ),
+              Text(
+                value,
+                style: GoogleFonts.rubik(color: Colors.white, fontSize: 16),
               ),
             ],
           ),

@@ -34,7 +34,7 @@ class _EmailPasswordSignupState extends State<EmailPasswordSignup> {
         },
       );
     } else {
-      final url = Uri.parse('https://conscientia2k24-dev-api.vercel.app/api/signup/sendOTP');
+      final url = Uri.parse('https://conscientia.co.in/api/signup/sendOTP');
       final response = await http.post(
         url,
         headers: {'Content-Type': 'application/json'},
@@ -118,7 +118,7 @@ class _EmailPasswordSignupState extends State<EmailPasswordSignup> {
 
       // User has successfully signed up
       debugPrint(userCredential.user.toString());
-      final url = Uri.parse('https://conscientia2k24-dev-api.vercel.app/api/signup');
+      final url = Uri.parse('https://conscientia.co.in/api/signup');
       final response = await http.post(
         url,
         headers: {'Content-Type': 'application/json'},

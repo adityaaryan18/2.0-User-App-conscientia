@@ -48,7 +48,7 @@ class _HomePageState extends State<HomePage> {
   void getUserDetails(String uid) async {
     try {
       final response = await http.post(
-        Uri.parse('https://conscientia2k24-dev-api.vercel.app/api/getUser'),
+        Uri.parse('https://conscientia.co.in/api/getUser'),
         body: json.encode({'userId': uid}),
       );
 
@@ -67,10 +67,12 @@ class _HomePageState extends State<HomePage> {
   }
 
   void initializeSocket([String? uid]) {
-    socket = IO.io('https://socketserver-conscientia2k24-o343q.ondigitalocean.app/', <String, dynamic>{
-      'transports': ['websocket'],
-      'autoConnect': false,
-    });
+    socket = IO.io(
+        'https://socketserver-conscientia2k24-o343q.ondigitalocean.app/',
+        <String, dynamic>{
+          'transports': ['websocket'],
+          'autoConnect': false,
+        });
 
     socket?.connect();
 
@@ -82,23 +84,24 @@ class _HomePageState extends State<HomePage> {
       }
     });
 
-socket?.on('userUpdate', (data) {
-  print("Data recieved using socket");
-  print(data);
+    socket?.on('userUpdate', (data) {
+      print("Data recieved using socket");
+      print(data);
 
-  // Parse the updated user data from the socket response
-  final updatedUser = UserModel.fromJson(data);
 
-  // Get the Firebase user ID of the currently logged-in user
-  final firebaseUser = context.read<User?>();
+      // Parse the updated user data from the socket response
+      final updatedUser = UserModel.fromJson(data);
 
-  if (firebaseUser != null && updatedUser.userId == firebaseUser.uid) {
-    // Update the user details only if the Firebase IDs match
-    context.read<UserProvider>().setUser(updatedUser);
-  } else {
-    print('Firebase ID mismatch: update ignored.');
-  }
-});
+      // Get the Firebase user ID of the currently logged-in user
+      final firebaseUser = context.read<User?>();
+
+      if (firebaseUser != null && updatedUser.userId == firebaseUser.uid) {
+        // Update the user details only if the Firebase IDs match
+        context.read<UserProvider>().setUser(updatedUser);
+      } else {
+        print('Firebase ID mismatch: update ignored.');
+      }
+    });
 
     socket?.onDisconnect((_) {
       print('Disconnected from socket');
@@ -110,7 +113,6 @@ socket?.on('userUpdate', (data) {
     socket?.dispose();
     super.dispose();
   }
-
 
   @override
   Widget build(BuildContext context) {
