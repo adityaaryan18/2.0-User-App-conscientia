@@ -1,11 +1,14 @@
+import 'dart:async';
 import 'dart:convert';
 import 'package:app/Food/home_page.dart';
 import 'package:app/main.dart';
+import 'package:app/pages/comingsoon.dart';
 import 'package:app/pages/events_workshop_homepage.dart';
 import 'package:app/Landing/dashboard_page.dart';
 import 'package:app/pages/leaderboard_page.dart';
 import 'package:app/pages/notifications_page.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
@@ -22,6 +25,7 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   int _selectedIndex = 0;
   IO.Socket? socket;
+
 
   @override
   void initState() {
@@ -40,9 +44,9 @@ class _HomePageState extends State<HomePage> {
   final List<Widget> _pages = [
     DashboardPage(),
     EventsWorkshopsHomepage(),
-    MyHomePage(),
+    Comingsoon(),
     LeaderboardPage(),
-    NotificationsPage(),
+    Comingsoon(),
   ];
 
   void getUserDetails(String uid) async {
@@ -52,9 +56,12 @@ class _HomePageState extends State<HomePage> {
         body: json.encode({'userId': uid}),
       );
 
+      print(response.statusCode);
+
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         final user = UserModel.fromJson(data['user']);
+
         context.read<UserProvider>().setUser(user);
         // Initialize socket after fetching user data
         initializeSocket(uid);
@@ -62,7 +69,7 @@ class _HomePageState extends State<HomePage> {
         print('Error: ${response.body}');
       }
     } catch (e) {
-      print('Error fetching user data: $e');
+      print('Error fetching User data: $e');
     }
   }
 
@@ -87,7 +94,6 @@ class _HomePageState extends State<HomePage> {
     socket?.on('userUpdate', (data) {
       print("Data recieved using socket");
       print(data);
-
 
       // Parse the updated user data from the socket response
       final updatedUser = UserModel.fromJson(data);

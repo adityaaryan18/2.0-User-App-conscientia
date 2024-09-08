@@ -82,5 +82,6 @@ class DefaultFirebaseOptions {
     projectId: 'consx-user-app',
     authDomain: 'consx-user-app.firebaseapp.com',
     storageBucket: 'consx-user-app.appspot.com',
+
   );
 }

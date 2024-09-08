@@ -1,27 +1,23 @@
 import 'dart:async';
-import 'package:app/Events/events_page.dart';
+import 'package:app/Events/event_card.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/intl.dart';
+import 'package:shimmer/shimmer.dart';
 
 class UpcomingEvents extends StatefulWidget {
-  const UpcomingEvents({super.key});
+  final eventData;
+
+  UpcomingEvents({
+    super.key,
+    required this.eventData,
+  });
 
   @override
   State<UpcomingEvents> createState() => _UpcomingEventsState();
 }
 
 class _UpcomingEventsState extends State<UpcomingEvents> {
-  static const List<String> events = [
-    "Upcoming Event 1",
-    "Upcoming Event 2",
-    "Fun Event 3",
-    "Fun Event 4",
-    "Fun Event 5",
-    "Fun Event 6",
-    "Fun Event 7",
-    "Fun Event 8"
-  ];
-
   final PageController _pageController = PageController(viewportFraction: 0.9);
   int _currentPage = 0;
   late Timer _timer;
@@ -30,7 +26,7 @@ class _UpcomingEventsState extends State<UpcomingEvents> {
   void initState() {
     super.initState();
     _timer = Timer.periodic(const Duration(seconds: 7), (Timer timer) {
-      if (_currentPage < events.length ~/ 2 - 1) {
+      if (_currentPage < widget.eventData.length ~/ 2 - 1) {
         _currentPage++;
       } else {
         _currentPage = 0;
@@ -53,9 +49,14 @@ class _UpcomingEventsState extends State<UpcomingEvents> {
 
   @override
   Widget build(BuildContext context) {
+    // Check if event data is empty or not yet loaded
+    bool isLoading = widget.eventData == null || widget.eventData.isEmpty;
+
     return Column(
       children: [
-        SizedBox(height: 20,),
+        const SizedBox(
+          height: 20,
+        ),
         Text(
           'UPCOMING EVENTS',
           style: GoogleFonts.rubik(
@@ -64,181 +65,107 @@ class _UpcomingEventsState extends State<UpcomingEvents> {
             fontWeight: FontWeight.bold,
           ),
         ),
-        SizedBox(height: 10,),
-        SizedBox(
-          height: 200, // Adjust height according to your design
-          child: PageView.builder(
-            controller: _pageController,
-            scrollDirection: Axis.horizontal,
-            itemCount: (events.length / 2).ceil(), // Half the length as each page shows 2 items
-            onPageChanged: (int page) {
-              setState(() {
-                _currentPage = page;
-              });
-            },
-            itemBuilder: (context, index) {
-              return Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Expanded(
-                    child: EventCard(
-                      imgURL: "assets/images/sh2.png",
-                      eventName: events[index * 2],
-                      colorUp: Colors.blueAccent,
-                      colorDown: Colors.lightBlue,
-                      colorMinor: Colors.lightBlueAccent,
-                      eventTime: "5:00 PM",
-                    ),
-                  ),
-                  if (index * 2 + 1 < events.length)
-                    Expanded(
-                      child: EventCard(
-                        imgURL: "assets/images/sh2.png",
-                        eventName: events[index * 2 + 1],
-                        colorUp: Colors.redAccent,
-                        colorDown: Colors.pinkAccent,
-                        colorMinor: Colors.pink,
-                        eventTime: "6:00 PM",
+        const SizedBox(
+          height: 10,
+        ),
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: SizedBox(
+            height: 200, // Adjust height according to your design
+            child: isLoading
+                ? Shimmer.fromColors(
+                    baseColor: const Color.fromARGB(255, 127, 127, 127)!,
+                    highlightColor: Colors.grey[100]!,
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: ListView.builder(
+                        scrollDirection: Axis.horizontal,
+                        itemCount: 2, // Show 2 shimmer items for loading effect
+                        itemBuilder: (context, index) {
+                          return Container(
+                            width: 150,
+                            margin: const EdgeInsets.symmetric(horizontal: 10),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          );
+                        },
                       ),
                     ),
-                ],
-              );
-            },
-          ),
-        ),
-        const SizedBox(height: 10),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: List.generate((events.length / 2).ceil(), (index) {
-            return AnimatedContainer(
-              duration: const Duration(milliseconds: 300),
-              margin: const EdgeInsets.symmetric(horizontal: 4.0),
-              height: 8.0,
-              width: _currentPage == index ? 16.0 : 8.0,
-              decoration: BoxDecoration(
-                color: _currentPage == index ? Colors.redAccent : Colors.white,
-                borderRadius: BorderRadius.circular(12),
-              ),
-            );
-          }),
-        ),
-      ],
-    );
-  }
-}
+                  )
+                : PageView.builder(
+                    controller: _pageController,
+                    scrollDirection: Axis.horizontal,
+                    itemCount: (widget.eventData.length / 2).ceil(),
+                    onPageChanged: (int page) {
+                      setState(() {
+                        _currentPage = page;
+                      });
+                    },
+                    itemBuilder: (context, index) {
+                      final event1 = widget.eventData[index * 2];
+                      final event2 = index * 2 + 1 < widget.eventData.length
+                          ? widget.eventData[index * 2 + 1]
+                          : null;
 
-class EventCard extends StatelessWidget {
-  final String imgURL;
-  final String eventName;
-  final String eventTime;
-  final Color colorUp, colorDown, colorMinor;
-  
-  const EventCard({
-    super.key,
-    required this.imgURL,
-    required this.eventName,
-    required this.colorDown,
-    required this.colorUp,
-    required this.colorMinor,
-    required this.eventTime,
-  });
+                      final DateTime eventDateTime1 =
+                          DateTime.parse(event1['eventStartDate']);
+                      final String formattedTime1 =
+                          DateFormat.jm().format(eventDateTime1);
 
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () {
-        Navigator.of(context).push(
-          MaterialPageRoute(
-            builder: (context) {
-              return EventsPage(
-                dateTime: "5 October 2024, 6 PM",
-                venue: "Aerospace Block/D3",
-                imgURL: "assets/images/shoe4.png",
-                colorDown: colorDown,
-                colorUp: colorUp,
-                colorMinor: colorMinor,
-                aboutEvent:
-                    "A maze solver event is a competition or activity where participants are tasked with navigating or programming a solution to traverse a maze. These events can vary in complexity and format, often involving physical robots, software algorithms, or even human participants solving a maze on foot. A maze solver event is a competition or activity where participants are tasked with navigating or programming a solution to traverse a maze. These events can vary in complexity and format, often involving physical robots, software algorithms, or even human participants solving a maze on foot.",
-                eventName: "Night Sky Hunt",
-              );
-            },
-          ),
-        );
-      },
-      child: Padding(
-        padding: const EdgeInsets.all(2.0),
-        child: Card(
-          color: Colors.transparent,
-          child: Stack(
-            children: [
-              Card(
-                clipBehavior: Clip.none,
-                semanticContainer: true,
-                shape: const RoundedRectangleBorder(
-                  borderRadius: BorderRadius.all(
-                    Radius.circular(20),
-                  ),
-                ),
-                elevation: 0,
-                shadowColor: const Color.fromARGB(255, 203, 203, 203),
-                child: Stack(
-                  children: [
-                    Container(
-                      decoration: BoxDecoration(
-                        borderRadius:
-                            const BorderRadius.all(Radius.circular(15)),
-                        gradient: LinearGradient(
-                          colors: [
-                            colorUp,
-                            colorDown,
-                          ],
-                          stops: const [0, 1],
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
-                        ),
-                      ),
-                    ),
-                    Column(
-                      children: [
-                        Expanded(
-                          child: Card(
-                            color: Colors.transparent,
+                      final DateTime eventDateTime2 =
+                          DateTime.parse(event2['eventStartDate']);
+                      final String formattedTime2 =
+                          DateFormat.jm().format(eventDateTime2);
+
+                      final DateTime eventDate1 =
+                          DateTime.parse(event1['eventStartDate']);
+                      final String formattedDate1 =
+                          DateFormat('d MMM').format(eventDate1); // '28 Sep'
+
+                      final DateTime eventDate2 =
+                          DateTime.parse(event2['eventStartDate']);
+                      final String formattedDate2 =
+                          DateFormat('d MMM').format(eventDate2); // '28 Sep'
+
+                      return Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Expanded(
                             child: Stack(
                               children: [
-                                Center(
-                                  child: Container(
-                                    width: 100,
-                                    height: 100,
-                                    decoration: BoxDecoration(
-                                      color: Colors.black.withOpacity(0.15),
-                                      shape: BoxShape.circle,
-                                    ),
-                                  ),
+                                EventCard(
+                                  imgURL: event1['nameCard'],
+                                  eventData: event1,
+                                  titleColor1: Color(int.parse(
+                                      '0xff${event1['cssDefinitions']['titleColour1'].substring(1)}')),
+                                  titleColor2: Color(int.parse(
+                                      '0xff${event1['cssDefinitions']['titleColour2'].substring(1)}')),
                                 ),
-                                Center(
-                                  child: Image.asset(
-                                    imgURL,
-                                    fit: BoxFit.cover,
-                                  ),
-                                ),
-                                Positioned(
-                                  top: 10,
-                                  right: 10,
-                                  child: Container(
-                                    padding: const EdgeInsets.symmetric(
-                                      vertical: 4,
-                                      horizontal: 8,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: Colors.black.withOpacity(0.6),
-                                      borderRadius: BorderRadius.circular(10),
-                                    ),
-                                    child: Text(
-                                      eventTime,
-                                      style: const TextStyle(
-                                        fontFamily: 'Nasa',
-                                        color: Colors.white,
-                                        fontSize: 10,
+                                Padding(
+                                  padding: const EdgeInsets.all(10.0),
+                                  child: Align(
+                                    alignment: Alignment.topCenter,
+                                    child: SizedBox(
+                                      width: double.infinity,
+                                      child: Card(
+                                        color: Colors.black.withOpacity(0.6),
+                                        child: Padding(
+                                          padding: const EdgeInsets.all(8.0),
+                                          child: Row(
+                                            children: [
+                                              const Spacer(),
+                                              Text(
+                                                "Time: $formattedTime1 \n Date: $formattedDate1" ,
+                                                style: GoogleFonts.rubik(
+                                                    fontWeight:
+                                                        FontWeight.bold),
+                                              ),
+                                              const Spacer(),
+                                            ],
+                                          ),
+                                        ),
                                       ),
                                     ),
                                   ),
@@ -246,35 +173,75 @@ class EventCard extends StatelessWidget {
                               ],
                             ),
                           ),
-                        ),
-                        Container(
-                          width: double.infinity,
-                          child: Card(
-                            color: Colors.black.withOpacity(0.6),
-                            child: Center(
-                              child: Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: Text(
-                                  eventName,
-                                  style: const TextStyle(
-                                    fontFamily: 'Nasa',
-                                    color: Colors.white,
-                                    fontSize: 10,
+                          if (event2 != null)
+                            Expanded(
+                              child: Stack(
+                                children: [
+                                  EventCard(
+                                    imgURL: event2['nameCard'],
+                                    eventData: event2,
+                                    titleColor1: Color(int.parse(
+                                        '0xff${event2['cssDefinitions']['titleColour1'].substring(1)}')),
+                                    titleColor2: Color(int.parse(
+                                        '0xff${event2['cssDefinitions']['titleColour2'].substring(1)}')),
                                   ),
-                                ),
+                                  Padding(
+                                    padding: const EdgeInsets.all(10.0),
+                                    child: Align(
+                                      alignment: Alignment.topCenter,
+                                      child: SizedBox(
+                                        width: double.infinity,
+                                        child: Card(
+                                          color: Colors.black.withOpacity(0.6),
+                                          child: Padding(
+                                            padding: const EdgeInsets.all(8.0),
+                                            child: Row(
+                                              children: [
+                                                const Spacer(),
+                                                Text(
+                                                  "Time: $formattedTime2 \n Date: $formattedDate2",
+                                                  style: GoogleFonts.rubik(
+                                                      fontWeight:
+                                                          FontWeight.bold),
+                                                ),
+                                                const Spacer(),
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ],
+                        ],
+                      );
+                    },
+                  ),
           ),
         ),
-      ),
+        const SizedBox(height: 10),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: List.generate(
+            (widget.eventData.length / 2).ceil(),
+            (index) {
+              return AnimatedContainer(
+                duration: const Duration(milliseconds: 300),
+                margin: const EdgeInsets.symmetric(horizontal: 4.0),
+                height: 8.0,
+                width: _currentPage == index ? 16.0 : 8.0,
+                decoration: BoxDecoration(
+                  color:
+                      _currentPage == index ? Colors.redAccent : Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              );
+            },
+          ),
+        ),
+      ],
     );
   }
 }

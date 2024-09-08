@@ -1,5 +1,7 @@
+import 'package:app/main.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:socket_io_client/socket_io_client.dart' as IO;
 
@@ -70,6 +72,8 @@ class _LeaderboardPageState extends State<LeaderboardPage> {
 
   @override
   Widget build(BuildContext context) {
+    final userProvider = context.watch<UserProvider>();
+    final user = userProvider.user;
     return Scaffold(
       extendBodyBehindAppBar: true, // Extend the body behind the app bar
       body: Stack(
@@ -82,7 +86,7 @@ class _LeaderboardPageState extends State<LeaderboardPage> {
             width: double.infinity,
           ),
           Container(
-            color: Colors.black.withOpacity(0.92),
+            color: Colors.black.withOpacity(0.85),
           ),
           // Content
           CustomScrollView(
@@ -90,106 +94,154 @@ class _LeaderboardPageState extends State<LeaderboardPage> {
               SliverAppBar(
                 floating: true,
                 centerTitle: true,
-                backgroundColor: Colors.transparent, // Make app bar transparent
+                backgroundColor: Colors.transparent,
                 flexibleSpace: FlexibleSpaceBar(
                   centerTitle: true,
-                  title: Text(
-                    "GALACTIC HIERARCHY",
-                    style: TextStyle(
-                      fontFamily: "Nasa",
-                      color: Colors.white,
-                      fontSize: 17,
-                    ),
+                  title: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        "GALACTIC HIERARCHY",
+                        style: TextStyle(
+                          fontFamily: "Nasa",
+                          color: Colors.white,
+                          fontSize: 17,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ),
               SliverToBoxAdapter(
-                child: leaderboardData.isNotEmpty
-                    ? Container(
-                        padding: EdgeInsets.symmetric(vertical: 20),
+                  child: Column(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.only(
+                        top: 10.0, left: 16.0, right: 16.0),
+                    child: Card(
+                      color: Color.fromARGB(255, 81, 177, 255).withOpacity(0.2),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(15),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(12.0),
                         child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceAround,
+                          mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            // First column with sized box and Admiral details
-                            if (leaderboardData.length > 1)
-                              Padding(
-                                padding: const EdgeInsets.all(10.0),
-                                child: Column(
-                                  children: [
-                                    SizedBox(
-                                        height:
-                                            MediaQuery.of(context).size.height *
-                                                0.1),
-                                    buildAvatarColumn(
-                                      leaderboardRankImages[1],
-                                      'Admiral',
-                                      leaderboardData[1]['firstName']
-                                          .toString()
-                                          .toUpperCase(),
-                                      leaderboardData[1]['username'].toString(),
-                                      leaderboardData[1]['conscientiaPoints']
-                                          .toString(),
-                                      const Color.fromARGB(179, 0, 0, 0),
-                                    ),
-                                  ],
-                                ),
+                            Text(
+                              "YOUR POINTS: ",
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                                color: Colors.white,
                               ),
-                            // Second column with First Order details
-                            if (leaderboardData.isNotEmpty)
-                              Column(
-                                children: [
-                                  buildAvatarColumn(
-                                    leaderboardRankImages[0],
-                                    'First Order',
-                                    leaderboardData[0]['firstName']
-                                        .toString()
-                                        .toUpperCase(),
-                                    leaderboardData[0]['username'].toString(),
-                                    leaderboardData[0]['conscientiaPoints']
-                                        .toString(),
-                                    const Color.fromARGB(255, 0, 0, 0),
+                            ),
+                            Text(
+                              "${user?.conscientiaPoints ?? 0}",
+                              style: TextStyle(
+                                fontSize: 16,
+                                color: Colors.green,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                  leaderboardData.isNotEmpty
+                      ? Container(
+                          padding: EdgeInsets.symmetric(vertical: 5),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceAround,
+                            children: [
+                              // First column with sized box and Admiral details
+                              if (leaderboardData.length > 1)
+                                Padding(
+                                  padding: const EdgeInsets.all(10.0),
+                                  child: Column(
+                                    children: [
+                                      SizedBox(
+                                          height: MediaQuery.of(context)
+                                                  .size
+                                                  .height *
+                                              0.1),
+                                      buildAvatarColumn(
+                                        leaderboardRankImages[1],
+                                        'Admiral',
+                                        leaderboardData[1]['firstName']
+                                            .toString()
+                                            .toUpperCase(),
+                                        leaderboardData[1]['username']
+                                            .toString(),
+                                        leaderboardData[1]['conscientiaPoints']
+                                            .toString(),
+                                        const Color.fromARGB(179, 0, 0, 0),
+                                      ),
+                                    ],
                                   ),
-                                ],
-                              ),
-                            // Third column with sized box and General details
-                            if (leaderboardData.length > 2)
-                              Padding(
-                                padding: const EdgeInsets.all(10.0),
-                                child: Column(
+                                ),
+                              // Second column with First Order details
+                              if (leaderboardData.isNotEmpty)
+                                Column(
                                   children: [
-                                    SizedBox(
-                                        height:
-                                            MediaQuery.of(context).size.height *
-                                                0.1),
                                     buildAvatarColumn(
-                                      leaderboardRankImages[2],
-                                      'General',
-                                      leaderboardData[2]['firstName']
+                                      leaderboardRankImages[0],
+                                      'First Order',
+                                      leaderboardData[0]['firstName']
                                           .toString()
                                           .toUpperCase(),
-                                      leaderboardData[2]['username'].toString(),
-                                      leaderboardData[2]['conscientiaPoints']
+                                      leaderboardData[0]['username'].toString(),
+                                      leaderboardData[0]['conscientiaPoints']
                                           .toString(),
                                       const Color.fromARGB(255, 0, 0, 0),
                                     ),
                                   ],
                                 ),
-                              ),
+                              // Third column with sized box and General details
+                              if (leaderboardData.length > 2)
+                                Padding(
+                                  padding: const EdgeInsets.all(10.0),
+                                  child: Column(
+                                    children: [
+                                      SizedBox(
+                                          height: MediaQuery.of(context)
+                                                  .size
+                                                  .height *
+                                              0.1),
+                                      buildAvatarColumn(
+                                        leaderboardRankImages[2],
+                                        'General',
+                                        leaderboardData[2]['firstName']
+                                            .toString()
+                                            .toUpperCase(),
+                                        leaderboardData[2]['username']
+                                            .toString(),
+                                        leaderboardData[2]['conscientiaPoints']
+                                            .toString(),
+                                        const Color.fromARGB(255, 0, 0, 0),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                            ],
+                          ),
+                        )
+                      : Column(
+                          children: [
+                            buildShimmerPlaceholder(),
+                            SizedBox(
+                              height: 10,
+                            ),
+                            buildShimmerLeaderboardCard(),
+                            SizedBox(
+                              height: 10,
+                            ),
+                            buildShimmerLeaderboardCard(),
                           ],
-                        ),
-                      )
-                    : Column(
-                      children: [
-                        buildShimmerPlaceholder(),
-                        SizedBox(height: 10,),
-                        buildShimmerLeaderboardCard(),
-                        SizedBox(height: 10,),
-                        buildShimmerLeaderboardCard(),
-                      
-                       
-                      ],
-                    )
-              ),
+                        )
+                ],
+              )),
               SliverList(
                 delegate: SliverChildBuilderDelegate(
                   (context, index) {
@@ -349,7 +401,6 @@ class _LeaderboardPageState extends State<LeaderboardPage> {
         const SizedBox(height: 10),
         Container(
           decoration: BoxDecoration(
-            color: name != 'null' ? bgColor : Colors.black,
             borderRadius: BorderRadius.circular(15),
           ),
           child: Padding(
@@ -357,7 +408,7 @@ class _LeaderboardPageState extends State<LeaderboardPage> {
             child: Text(
               name != 'null' ? rankName : 'Not Recognised',
               style: TextStyle(
-                  color: Colors.white, fontFamily: 'Nasa', fontSize: 10),
+                  color: Colors.white, fontFamily: 'Nasa', fontSize: 11),
               textAlign: TextAlign.center,
             ),
           ),
@@ -366,13 +417,15 @@ class _LeaderboardPageState extends State<LeaderboardPage> {
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            FittedBox(
-              child: Center(
-                child: Text(
-                  name,
-                  style: GoogleFonts.rubik(color: Colors.white, fontSize: 13),
+            Row(
+              children: [
+                FittedBox(
+                  child: Text(
+                    name,
+                    style: GoogleFonts.rubik(color: Colors.white, fontSize: 13),
+                  ),
                 ),
-              ),
+              ],
             ),
             FittedBox(
               child: Text(
@@ -397,64 +450,64 @@ class _LeaderboardPageState extends State<LeaderboardPage> {
   }
 }
 
-  // Shimmer Placeholder for Avatar Section
-  Widget buildShimmerPlaceholder() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceAround,
-      children: List.generate(3, (index) {
-        return Shimmer.fromColors(
-          baseColor: Colors.grey.shade800,
-          highlightColor: Colors.grey.shade600,
-          child: Column(
-            children: [
-              SizedBox(height: index%2 == 0? 80:20),
-              CircleAvatar(
-                backgroundColor: Colors.grey,
-                radius: 45,
-              ),
-              const SizedBox(height: 10),
-              Container(
-                width: 80,
-                height: 20,
-                decoration: BoxDecoration(
-                  color: Colors.grey.shade800,
-                  borderRadius: BorderRadius.circular(15),
-                ),
-              ),
-              const SizedBox(height: 5),
-              Container(
-                width: 60,
-                height: 15,
-                color: Colors.grey.shade800,
-              ),
-              const SizedBox(height: 5),
-              Container(
-                width: 50,
-                height: 10,
-                color: Colors.grey.shade800,
-              ),
-            ],
-          ),
-        );
-      }),
-    );
-  }
-
-  // Shimmer Placeholder for Leaderboard Cards
-  Widget buildShimmerLeaderboardCard() {
-    return Padding(
-      padding: const EdgeInsets.all(8.0),
-      child: Shimmer.fromColors(
+// Shimmer Placeholder for Avatar Section
+Widget buildShimmerPlaceholder() {
+  return Row(
+    mainAxisAlignment: MainAxisAlignment.spaceAround,
+    children: List.generate(3, (index) {
+      return Shimmer.fromColors(
         baseColor: Colors.grey.shade800,
         highlightColor: Colors.grey.shade600,
-        child: Container(
-          height: 75,
-          width: double.infinity,
-          decoration: BoxDecoration(
-            color: Colors.grey.shade800,
-            borderRadius: BorderRadius.circular(30),
-          ),
+        child: Column(
+          children: [
+            SizedBox(height: index % 2 == 0 ? 80 : 20),
+            CircleAvatar(
+              backgroundColor: Colors.grey,
+              radius: 45,
+            ),
+            const SizedBox(height: 10),
+            Container(
+              width: 80,
+              height: 20,
+              decoration: BoxDecoration(
+                color: Colors.grey.shade800,
+                borderRadius: BorderRadius.circular(15),
+              ),
+            ),
+            const SizedBox(height: 5),
+            Container(
+              width: 60,
+              height: 15,
+              color: Colors.grey.shade800,
+            ),
+            const SizedBox(height: 5),
+            Container(
+              width: 50,
+              height: 10,
+              color: Colors.grey.shade800,
+            ),
+          ],
+        ),
+      );
+    }),
+  );
+}
+
+// Shimmer Placeholder for Leaderboard Cards
+Widget buildShimmerLeaderboardCard() {
+  return Padding(
+    padding: const EdgeInsets.all(8.0),
+    child: Shimmer.fromColors(
+      baseColor: Colors.grey.shade800,
+      highlightColor: Colors.grey.shade600,
+      child: Container(
+        height: 75,
+        width: double.infinity,
+        decoration: BoxDecoration(
+          color: Colors.grey.shade800,
+          borderRadius: BorderRadius.circular(30),
         ),
       ),
-    );
-  }
+    ),
+  );
+}

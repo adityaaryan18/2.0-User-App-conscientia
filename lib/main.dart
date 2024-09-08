@@ -1,4 +1,3 @@
-
 import 'package:app/Food/cart_provider.dart';
 import 'package:app/Food/restaurant_route.dart';
 import 'package:app/services/firebase_auth_methods.dart';
@@ -36,27 +35,23 @@ class MyApp extends StatelessWidget {
           initialData: null,
         ),
         ChangeNotifierProvider(create: (_) => UserProvider()),
-        ChangeNotifierProvider(create: (_)=>CartProvider()),
+        ChangeNotifierProvider(create: (_) => CartProvider()),
       ],
-      
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
-        theme: ThemeData.dark(
-        ),
+        theme: ThemeData.dark(),
         home: const AuthWrapper(),
         routes: {
           EmailPasswordSignup.routeName: (context) =>
               const EmailPasswordSignup(),
           EmailPasswordLogin.routeName: (context) => const EmailPasswordLogin(),
         },
-      initialRoute: '/',
-      onGenerateRoute: RestaurantRoute.generateRoute ,
+        initialRoute: '/',
+        onGenerateRoute: RestaurantRoute.generateRoute,
       ),
     );
   }
 }
-
-
 
 class AuthWrapper extends StatelessWidget {
   const AuthWrapper({Key? key}) : super(key: key);
@@ -87,6 +82,7 @@ class UserProvider with ChangeNotifier {
     notifyListeners();
   }
 }
+
 class UserModel {
   final String id;
   final String forceId;
@@ -97,7 +93,8 @@ class UserModel {
   final String? profile;
   final String? college;
   final String? collegeId;
-  final int? aadhar;
+  final String? aadhar;
+  final bool? iist;
   final String role;
   final String email;
   final String userId;
@@ -107,6 +104,7 @@ class UserModel {
   final List<dynamic> registeredWorkshops;
   final List<dynamic> purchasedMerchs;
   final int rank;
+  final String rankName;
   final int conscientiaPoints;
   final List<dynamic> foodOrders;
   final DateTime createdAt;
@@ -123,6 +121,7 @@ class UserModel {
     this.college,
     this.collegeId,
     this.aadhar,
+    this.iist,
     required this.role,
     required this.email,
     required this.userId,
@@ -132,6 +131,7 @@ class UserModel {
     required this.registeredWorkshops,
     required this.purchasedMerchs,
     required this.rank,
+    required this.rankName,
     required this.conscientiaPoints,
     required this.foodOrders,
     required this.createdAt,
@@ -150,6 +150,7 @@ class UserModel {
       college: json['college'],
       collegeId: json['collegeId'],
       aadhar: json['aadhar'],
+      iist: json['iist'],
       role: json['role'],
       email: json['email'],
       userId: json['userId'],
@@ -159,6 +160,7 @@ class UserModel {
       registeredWorkshops: json['registeredWorkshops'],
       purchasedMerchs: json['purchasedMerchs'],
       rank: json['rank'],
+      rankName: json['rankName'],
       conscientiaPoints: json['conscientiaPoints'],
       foodOrders: json['foodOrders'],
       createdAt: DateTime.parse(json['createdAt']),
@@ -177,6 +179,7 @@ class UserModel {
       'college': college,
       'collegeId': collegeId,
       'aadhar': aadhar,
+      'iist': iist,
       'role': role,
       'email': email,
       'userId': userId,

@@ -52,13 +52,24 @@ class _EmailPasswordLoginState extends State<EmailPasswordLogin> {
                     Text(
                       "MAY THE FORCE BE WITH YOU",
                       style: TextStyle(
-                        fontFamily: 'warx',
+                        fontFamily: 'Nasa',
                         fontSize: 20,
                         color: Color.fromARGB(115, 255, 255, 255),
                       ),
                       textAlign: TextAlign.center,
                     ),
                     SizedBox(height: 20),
+                    Text(
+                      "Login",
+                      style: TextStyle(
+                        fontFamily: 'Nasa',
+                        fontSize: 15,
+                        color: Color.fromARGB(255, 255, 255, 255),
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    SizedBox(height: 20),
+                    
                     Padding(
                       padding: const EdgeInsets.all(16.0),
                       child: Column(
@@ -131,16 +142,6 @@ class _EmailPasswordLoginState extends State<EmailPasswordLogin> {
                           SizedBox(height: 20),
                           TextButton(
                             onPressed: () {
-                              
-                            },
-                            child: Text(
-                              'Forgot password?',
-                              style: TextStyle(color: Colors.red),
-                            ),
-                          ),
-                          SizedBox(height: 10),
-                          TextButton(
-                            onPressed: () {
                               Navigator.push(
                                   context,
                                   MaterialPageRoute(
@@ -155,6 +156,17 @@ class _EmailPasswordLoginState extends State<EmailPasswordLogin> {
                               textAlign: TextAlign.center,
                             ),
                           ),
+                          TextButton(
+                            onPressed: () {
+                              
+                            },
+                            child: Text(
+                              'Forgot password?',
+                              style: TextStyle(color: Colors.red),
+                            ),
+                          ),
+                          SizedBox(height: 10),
+                          
                         ],
                       ),
                     ),

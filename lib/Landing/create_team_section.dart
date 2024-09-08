@@ -160,7 +160,7 @@ class _CreateTeamSectionState extends State<CreateTeamSection> {
                           child: TextField(
                             controller: textEditingController,
                             decoration: InputDecoration(
-                              hintText: 'Search Your Friend Here!',
+                              hintText: 'Enter Your Friend Username',
                               hintStyle: TextStyle(color: Colors.white70),
                               prefixIcon:
                                   Icon(Icons.search, color: Colors.white70),

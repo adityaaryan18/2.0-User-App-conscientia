@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:math';
 import 'package:app/main.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -15,7 +16,7 @@ class UserProfilePage extends StatelessWidget {
         Uri.parse(
             "https://conscientia.co.in/api/updateUser/updateName"),
         body: json.encode(
-            {'firstName': firstname, 'lastname': lastname, 'userId': uid}),
+            {'firstName': firstname, 'lastName': lastname, 'userId': uid}),
       );
 
       if (response.statusCode == 200) {
@@ -129,7 +130,6 @@ class UserProfilePage extends StatelessWidget {
   void updateAadhar({
     required String uid,
     String? aadhar,
-
   }) async {
     try {
       final response = await http.post(
@@ -138,7 +138,6 @@ class UserProfilePage extends StatelessWidget {
         body: json.encode({
           'userId': uid,
           'aadhar': aadhar,
-
         }),
       );
 
@@ -199,7 +198,11 @@ class UserProfilePage extends StatelessWidget {
                         color: Colors.white,
                       ),
                     ),
-                    Text('It is mandatory to fill every section', style: GoogleFonts.rubik(fontSize: 14,color: Colors.white),),
+                    Text(
+                      'It is mandatory to fill every section',
+                      style:
+                          GoogleFonts.rubik(fontSize: 14, color: Colors.white),
+                    ),
                     const SizedBox(height: 10),
                     Row(
                       children: [
@@ -231,7 +234,8 @@ class UserProfilePage extends StatelessWidget {
                       context: context,
                       title: 'Name',
                       value: '${user?.firstName ?? ''} ${user?.lastName ?? ''}',
-                      onTap: () => _showNameDialog(context, uid!),
+                      onTap: () => _showNameDialog(context, uid!,
+                          user?.firstName ?? "", user?.lastName ?? ""),
                     ),
                     const SizedBox(height: 10),
                     _buildInfoCard(
@@ -246,6 +250,7 @@ class UserProfilePage extends StatelessWidget {
                         keyboardType: TextInputType.number,
                         maxLength: 10,
                         uid: uid!,
+                        iist: user?.iist ?? false,
                       ),
                     ),
                     const SizedBox(height: 10),
@@ -259,6 +264,7 @@ class UserProfilePage extends StatelessWidget {
                         labelText: 'College',
                         initialValue: user?.college ?? '',
                         uid: uid!,
+                        iist: user?.iist ?? false,
                       ),
                     ),
                     const SizedBox(height: 10),
@@ -272,6 +278,7 @@ class UserProfilePage extends StatelessWidget {
                         labelText: 'College ID',
                         initialValue: user?.collegeId ?? '',
                         uid: uid!,
+                        iist: user?.iist ?? false,
                       ),
                     ),
                     const SizedBox(height: 10),
@@ -281,15 +288,23 @@ class UserProfilePage extends StatelessWidget {
                       value: user?.aadhar?.toString() ?? '',
                       onTap: () => _showInputDialog(
                         context,
-                        title: "This is ",
-                        labelText: 'Aadhar',
+                        title: user?.iist == true
+                            ? "Enter last 4 digits of Aadhaar"
+                            : "Enter your Aadhaar number",
+                        labelText: 'Aadhaar',
                         initialValue: user?.aadhar?.toString() ?? '',
                         keyboardType: TextInputType.number,
-                        maxLength: 12,
+                        maxLength: user?.iist == true
+                            ? 4
+                            : 12, // Limit the input based on iist flag
+
                         uid: uid!,
+                        iist: user?.iist ?? false,
                       ),
                     ),
-                    SizedBox(height: 10,)
+                    SizedBox(
+                      height: 10,
+                    )
                   ],
                 ),
               ),
@@ -335,10 +350,14 @@ class UserProfilePage extends StatelessWidget {
     );
   }
 
-  void _showNameDialog(BuildContext context, String uid,) {
-    final firstNameController = TextEditingController();
-    final lastNameController = TextEditingController();
-  
+  void _showNameDialog(
+    BuildContext context,
+    String uid,
+    String? firstInitialValue,
+    String? lastInitialValue,
+  ) {
+    final firstNameController = TextEditingController(text: firstInitialValue);
+    final lastNameController = TextEditingController(text: lastInitialValue);
 
     showDialog(
       context: context,
@@ -352,7 +371,7 @@ class UserProfilePage extends StatelessWidget {
                   MainAxisSize.min, // Adjusts the size based on content
               children: [
                 _buildTextField(
-                  labelText:  'First Name',
+                  labelText: 'First Name',
                   context: context,
                   controller: firstNameController,
                 ),
@@ -365,8 +384,27 @@ class UserProfilePage extends StatelessWidget {
               ],
             ),
             onSave: () {
-              saveName(firstNameController.text, lastNameController.text, uid);
-              Navigator.of(context).pop();
+              // Check if both fields are filled before saving
+              if (firstNameController.text.isEmpty ||
+                  lastNameController.text.isEmpty) {
+                // Show error if either field is empty
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      'Both First Name and Last Name are required',
+                      style: GoogleFonts.rubik(
+                        color: Colors.white,
+                      ),
+                    ),
+                    backgroundColor: const Color.fromARGB(255, 255, 85, 73),
+                  ),
+                );
+              } else {
+                // Save names if valid
+                saveName(
+                    firstNameController.text, lastNameController.text, uid);
+                Navigator.of(context).pop();
+              }
             },
           ),
         );
@@ -382,6 +420,7 @@ class UserProfilePage extends StatelessWidget {
     TextInputType keyboardType = TextInputType.text,
     int? maxLength,
     required String uid,
+    required bool iist, // Pass the iist value
   }) {
     final controller = TextEditingController(text: initialValue);
 
@@ -399,15 +438,54 @@ class UserProfilePage extends StatelessWidget {
             maxLength: maxLength,
           ),
           onSave: () {
-            // Update the relevant field based on the label
-            if (labelText == 'Mobile') {
+            // Aadhaar validation for IIST and non-IIST users
+            if (labelText == 'Aadhaar') {
+              if (iist) {
+                if (controller.text.length < 4) {
+                  // Show Snackbar for invalid Aadhaar (less than 4 digits for IIST)
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                          'Aadhaar should be exactly 4 digits for IIST users.'),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                  return;
+                } else {
+                  updateAadhar(uid: uid, aadhar: controller.text);
+                }
+              } else {
+                if (controller.text.length < 12) {
+                  // Show Snackbar for invalid Aadhaar (less than 12 digits for non-IIST)
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                          'Aadhaar should be exactly 12 digits for non-IIST users.'),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                  return;
+                } else {
+                  updateAadhar(uid: uid, aadhar: controller.text);
+                }
+              }
+            } else if (labelText == 'Mobile') {
               updateMobile(uid: uid, mobile: controller.text);
             } else if (labelText == 'College') {
-              updateCollege(uid: uid, college: controller.text);
-            } else if (labelText == 'College ID') {
+              if (iist) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('IISTians cannot update their college'),
+                    backgroundColor: Colors.red,
+                  ),
+                );
+                return;
+              } else {
+                updateCollege(uid: uid, college: controller.text);
+              }
+            } 
+            else if (labelText == 'College ID') {
               updateCollegeId(uid: uid, collegeId: controller.text);
-            } else if (labelText == 'Aadhar') {
-              updateAadhar(uid: uid, aadhar: controller.text);
             }
 
             Navigator.of(context).pop();
@@ -434,11 +512,13 @@ class UserProfilePage extends StatelessWidget {
         labelText: labelText,
         labelStyle: GoogleFonts.rubik(color: Colors.white),
         enabledBorder: OutlineInputBorder(
-          borderSide: const BorderSide(color: Color.fromARGB(255, 255, 255, 255), width: 0.2),
+          borderSide: const BorderSide(
+              color: Color.fromARGB(255, 255, 255, 255), width: 0.2),
           borderRadius: BorderRadius.circular(10),
         ),
         focusedBorder: OutlineInputBorder(
-          borderSide: const BorderSide(color: Color.fromARGB(255, 255, 255, 255), width: 0.2),
+          borderSide: const BorderSide(
+              color: Color.fromARGB(255, 255, 255, 255), width: 0.2),
           borderRadius: BorderRadius.circular(10),
         ),
       ),
@@ -461,7 +541,8 @@ class UserProfilePage extends StatelessWidget {
           children: [
             Text(
               title,
-              style: GoogleFonts.rubik(color: Color.fromARGB(255, 255, 77, 77), fontSize: 20),
+              style: GoogleFonts.rubik(
+                  color: Color.fromARGB(255, 255, 255, 255), fontSize: 20),
             ),
             const SizedBox(height: 20),
             content,
@@ -472,7 +553,8 @@ class UserProfilePage extends StatelessWidget {
                 onPressed: onSave,
                 child: Text(
                   'Save',
-                  style: GoogleFonts.rubik(color: Colors.green),
+                  style: GoogleFonts.rubik(
+                      color: Color.fromARGB(255, 255, 18, 18)),
                 ),
               ),
             ),

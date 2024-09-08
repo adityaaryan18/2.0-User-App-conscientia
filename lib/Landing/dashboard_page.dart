@@ -5,15 +5,19 @@ import 'package:app/Landing/my_activity.dart';
 import 'package:app/Landing/order_stat_dash.dart';
 import 'package:app/Landing/upcoming_event.dart';
 import 'package:app/Landing/user_card.dart';
-import 'package:app/Merch/merch_home.dart';
-import 'package:app/Merch/merch_widget.dart';
 import 'package:app/main.dart';
+import 'package:app/pages/comingsoon.dart';
+import 'package:app/pages/my_events_page.dart';
+import 'package:app/pages/my_workshop_page.dart';
 import 'package:flutter/material.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:provider/provider.dart';
+import 'package:socket_io_client/socket_io_client.dart' as IO;
 
 class DashboardPage extends StatefulWidget {
-  const DashboardPage({super.key});
+  DashboardPage({
+    super.key,
+  });
 
   @override
   State<DashboardPage> createState() => _DashboardPageState();
@@ -22,11 +26,12 @@ class DashboardPage extends StatefulWidget {
 class _DashboardPageState extends State<DashboardPage> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   int selectedIndex = 0;
-
+ 
   @override
   Widget build(BuildContext context) {
     final userProvider = context.watch<UserProvider>();
     final user = userProvider.user;
+
 
     if (user != null) {
       print('Username: ${user.username}');
@@ -77,10 +82,7 @@ class _DashboardPageState extends State<DashboardPage> {
                             icon: FluentIcons.toolbox_24_regular,
                             text: 'My Workshop',
                           ),
-                          _buildDrawerItem(
-                            icon: Icons.shopping_bag_outlined,
-                            text: 'My Merchandise',
-                          ),
+
                           _buildDrawerItem(
                             icon: FluentIcons.people_24_regular,
                             text: 'My Friendlist',
@@ -91,13 +93,10 @@ class _DashboardPageState extends State<DashboardPage> {
                           ),
                           _buildDrawerItem(
                             icon: FluentIcons.cart_24_regular,
-                            text: 'My Orders',
+                            text: 'My Food Orders',
                           ),
                           const Divider(color: Colors.white),
-                          _buildDrawerItem(
-                            icon: FluentIcons.shopping_bag_16_filled,
-                            text: 'Merchandise',
-                          ),
+
                           _buildDrawerItem(
                             icon: FluentIcons.alert_24_regular,
                             text: 'Announcements',
@@ -183,7 +182,7 @@ class _DashboardPageState extends State<DashboardPage> {
                       const SizedBox(height: 10),
                       if (selectedIndex == 0) const DashboardSection(),
                       if (selectedIndex == 1) const MyActivitySection(),
-                      if (selectedIndex == 2) const CreateTeamSection(),
+                      if (selectedIndex == 2)  CreateTeamSection(),
                     ],
                   ),
                 ),
@@ -236,55 +235,54 @@ class _DashboardPageState extends State<DashboardPage> {
           case 'My Events':
             Navigator.of(context).push(
               MaterialPageRoute(
-                  builder: (context) => MerchandiseScreen(),
+                  builder: (context) => MyEventsPage(),
                   fullscreenDialog: true),
             );
           case 'My Workshop':
             Navigator.of(context).push(
               MaterialPageRoute(
-                  builder: (context) => MerchandiseScreen(),
+                  builder: (context) => MyworkshopsPage(),
                   fullscreenDialog: true),
             );
-          case 'My Merchandise':
-            Navigator.of(context).push(
-              MaterialPageRoute(
-                  builder: (context) => MerchandiseScreen(),
-                  fullscreenDialog: true),
-            );
+
           case 'My Friendlist':
+
+          Navigator.of(context).pop();
+          setState(() {
+            selectedIndex=2;
+            
+          });
+
+          case 'Friend Requests':
+          Navigator.of(context).pop();
+          setState(() {
+            selectedIndex=2;
+
+          });
+          
+
+          case 'My Food Orders':
             Navigator.of(context).push(
               MaterialPageRoute(
-                  builder: (context) => MerchandiseScreen(),
-                  fullscreenDialog: true),
-            );
-          case 'My Requests':
-            Navigator.of(context).push(
-              MaterialPageRoute(
-                  builder: (context) => MerchandiseScreen(),
-                  fullscreenDialog: true),
-            );
-          case 'My Orders':
-            Navigator.of(context).push(
-              MaterialPageRoute(
-                  builder: (context) => MerchandiseScreen(),
+                  builder: (context) => Comingsoon(),
                   fullscreenDialog: true),
             );
           case 'Merchandise':
             Navigator.of(context).push(
               MaterialPageRoute(
-                  builder: (context) => MerchandiseScreen(),
+                  builder: (context) => Comingsoon(),
                   fullscreenDialog: true),
             );
           case 'Announcements':
             Navigator.of(context).push(
               MaterialPageRoute(
-                  builder: (context) => MerchandiseScreen(),
+                  builder: (context) => Comingsoon(),
                   fullscreenDialog: true),
             );
           case 'Developers':
             Navigator.of(context).push(
               MaterialPageRoute(
-                  builder: (context) => MerchandiseScreen(),
+                  builder: (context) => Comingsoon(),
                   fullscreenDialog: true),
             );
         }
@@ -293,39 +291,90 @@ class _DashboardPageState extends State<DashboardPage> {
   }
 }
 
-class DashboardSection extends StatelessWidget {
+class DashboardSection extends StatefulWidget {
   const DashboardSection({super.key});
 
   @override
+  State<DashboardSection> createState() => _DashboardSectionState();
+}
+
+class _DashboardSectionState extends State<DashboardSection> {
+
+
+    IO.Socket? socket;
+  
+    List upcomingEventData=[];
+
+  
+    @override
+  void initState() {
+    super.initState();
+    initializeSocket();
+  }
+
+    void initializeSocket() {
+    socket = IO.io(
+        'https://socketserver-conscientia2k24-o343q.ondigitalocean.app/',
+        <String, dynamic>{
+          'transports': ['websocket'],
+          'autoConnect': false,
+        });
+
+    socket?.connect();
+
+    socket?.onConnect((_) {
+      print('Connected to socket');
+      // Subscribe to the user's room or listen for specific events
+    });
+
+    socket?.on('upcomingevents', (data) {
+      print("Data recieved on dashboooarrrrdd");
+      print(data);
+      setState(() {
+        upcomingEventData=data;
+      });
+      
+    });
+    }
+
+
+  @override
   Widget build(BuildContext context) {
+
+    print('socket data on dashboard Page xyz ${upcomingEventData}');
+
+
+
     return SingleChildScrollView(
       scrollDirection: Axis.vertical,
       child: Column(
         children: [
           // Announcements on Dashboard section
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Announcements(),
-          ),
+          // Padding(
+          //   padding: const EdgeInsets.all(8.0),
+          //   child: Announcements(),
+          // ),
 
           // User Card User Interface and APIs
           UserCard(),
 
           // OrderStatus Live Update for Users
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Column(
-              children: [
-                OrderList(),
-              ],
-            ),
-          ),
-          
+          // Padding(
+          //   padding: const EdgeInsets.all(8.0),
+          //   child: Column(
+          //     children: [
+          //       OrderList(),
+          //     ],
+          //   ),
+          // ),
+
           FunEvents(),
 
-          UpcomingEvents(),
+          UpcomingEvents(
+            eventData: upcomingEventData
+          ),
 
-          MerchWidget()
+          // MerchWidget()
         ],
       ),
     );
