@@ -1,8 +1,13 @@
-import 'package:flutter/cupertino.dart';
+import 'package:app/Food/restaurant.dart';
+
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class Searchpage extends StatefulWidget {
+  final List stores;
+
+  Searchpage({required this.stores});
+
   @override
   State<Searchpage> createState() => _SearchpageState();
 }
@@ -10,38 +15,21 @@ class Searchpage extends StatefulWidget {
 class _SearchpageState extends State<Searchpage> {
   late var myFocusNode = FocusNode();
   final search = TextEditingController();
-
-  var arrDishes = [
-    {"image": "assets/images/biryani.png", "name": "Biryani"},
-    {"image": "assets/images/cake.png", "name": "Cake"},
-    {"image": "assets/images/chicken.png", "name": "Chicken"},
-    {"image": "assets/images/pizza.png", "name": "Pizza"},
-    {"image": "assets/images/burger.png", "name": "Burger"},
-    {"image": "assets/images/dosa.png", "name": "Dosa"},
-    {"image": "assets/images/rice.png", "name": "Rice"},
-    {"image": "assets/images/Shawrma.png", "name": "Shawarma"},
-    {"image": "assets/images/biryani.png", "name": "Biryani"},
-    {"image": "assets/images/cake.png", "name": "Cake"},
-    {"image": "assets/images/chicken.png", "name": "Chicken"},
-    {"image": "assets/images/pizza.png", "name": "Pizza"},
-    {"image": "assets/images/burger.png", "name": "Burger"},
-    {"image": "assets/images/dosa.png", "name": "Dosa"},
-    {"image": "assets/images/rice.png", "name": "Rice"},
-    {"image": "assets/images/Shawrma.png", "name": "Shawarma"},
-    {"image": "assets/images/biryani.png", "name": "Biryani"},
-    {"image": "assets/images/cake.png", "name": "Cake"},
-    {"image": "assets/images/chicken.png", "name": "Chicken"},
-    {"image": "assets/images/pizza.png", "name": "Pizza"},
-    {"image": "assets/images/burger.png", "name": "Burger"},
-    {"image": "assets/images/dosa.png", "name": "Dosa"},
-    {"image": "assets/images/rice.png", "name": "Rice"},
-    {"image": "assets/images/Shawrma.png", "name": "Shawarma"},
-  ];
+  List availableFoodItems = [];
 
   @override
   void initState() {
     super.initState();
     myFocusNode = FocusNode();
+    filterAvailableFoodItems();
+  }
+
+  void filterAvailableFoodItems() {
+    // Collecting available food items
+    availableFoodItems = widget.stores.expand((store) {
+      return store['foodItems']
+          .where((foodItem) => foodItem['available'] == true);
+    }).toList();
   }
 
   @override
@@ -72,7 +60,10 @@ class _SearchpageState extends State<Searchpage> {
                   child: GestureDetector(
                     onTap: () {
                       showSearch(
-                          context: context, delegate: CustomSearchDelegate());
+                          context: context,
+                          delegate: CustomSearchDelegate(
+                            foodItems: availableFoodItems,
+                          ));
                     },
                     child: Container(
                       height: 50,
@@ -90,10 +81,10 @@ class _SearchpageState extends State<Searchpage> {
                           ]),
                       child: Row(
                         children: [
-                          
                           Expanded(
                             child: Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 18),
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 18),
                               child: Text(
                                 "Search your desired food item",
                                 style: GoogleFonts.rubik(
@@ -124,24 +115,38 @@ class _SearchpageState extends State<Searchpage> {
                 Expanded(
                   child: GridView.count(
                     crossAxisCount: 3,
-                    children: arrDishes.map((toElement) {
-                      return Container(
-                        child: Column(
-                          children: [
-                            CircleAvatar(
-                              radius: 35,
-                              backgroundColor: Colors.transparent,
-                              backgroundImage:
-                                  AssetImage(toElement['image'].toString()),
+                    children: availableFoodItems
+                        .where((foodItem) => foodItem['seller']
+                            ['open']) // Filter out closed sellers
+                        .map((foodItem) {
+                      return GestureDetector(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => Restaurant(
+                                  sellerUid: foodItem['seller']['uid']),
                             ),
-                            Text(
-                              toElement['name'].toString(),
-                              style: TextStyle(
-                                  fontSize: 15,
-                                  color: Colors.white,
-                                  fontFamily: "Inter"),
-                            )
-                          ],
+                          );
+                        },
+                        child: Container(
+                          child: Column(
+                            children: [
+                              CircleAvatar(
+                                radius: 35,
+                                backgroundColor: Colors.transparent,
+                                backgroundImage:
+                                    NetworkImage(foodItem['image'].toString()),
+                              ),
+                              Text(
+                                foodItem['name'].toString(),
+                                style: TextStyle(
+                                    fontSize: 15,
+                                    color: Colors.white,
+                                    fontFamily: "Inter"),
+                              )
+                            ],
+                          ),
                         ),
                       );
                     }).toList(),
@@ -155,8 +160,11 @@ class _SearchpageState extends State<Searchpage> {
     );
   }
 }
-
 class CustomSearchDelegate extends SearchDelegate {
+  final List foodItems;
+
+  CustomSearchDelegate({required this.foodItems});
+
   @override
   ThemeData appBarTheme(BuildContext context) {
     return ThemeData(
@@ -172,25 +180,7 @@ class CustomSearchDelegate extends SearchDelegate {
 
   late var myFocusNode = FocusNode();
 
-  List<String> FoodItems = [
-    'Pizza',
-    'Dominos',
-    'Burger',
-    'Momos',
-    'Ice Cream',
-    'Wow Momos',
-    'Burger King',
-    'Coke',
-    'Garlic Bread',
-    'Chicken Wings',
-    'KFC',
-    'Rice',
-    'Fries',
-    'Dosa',
-    'Shawrma'
-  ];
-
- @override
+  @override
   List<Widget>? buildActions(BuildContext context) {
     return [];
   }
@@ -198,23 +188,27 @@ class CustomSearchDelegate extends SearchDelegate {
   @override
   Widget? buildLeading(BuildContext context) {
     return IconButton(
-        onPressed: () {
-          myFocusNode.unfocus();
-          close(context, null);
-        },
-        icon: Icon(
-          Icons.arrow_circle_left_outlined,
-          color: const Color.fromARGB(255, 255, 194, 13),
-          size: 30,
-        ));
+      onPressed: () {
+        myFocusNode.unfocus();
+        close(context, null);
+      },
+      icon: Icon(
+        Icons.arrow_circle_left_outlined,
+        color: const Color.fromARGB(255, 255, 194, 13),
+        size: 30,
+      ),
+    );
   }
 
   @override
   Widget buildResults(BuildContext context) {
     List<String> matchItems = [];
-    for (var item in FoodItems) {
-      if (item.toLowerCase().contains(query.toLowerCase())) {
-        matchItems.add(item);
+    for (var item in foodItems) {
+      if (item['description']
+          .toString()
+          .toLowerCase()
+          .contains(query.toLowerCase())) {
+        matchItems.add(item['description'].toString());
       }
     }
     return ListView.builder(
@@ -223,8 +217,10 @@ class CustomSearchDelegate extends SearchDelegate {
         var result = matchItems[index];
         return ListTile(
           tileColor: Colors.black,
-          titleTextStyle: TextStyle(color: Colors.white),
-          title: Text(result),
+          title: Text(
+            result,
+            style: TextStyle(color: Colors.white),
+          ),
         );
       },
       itemCount: matchItems.length,
@@ -233,9 +229,12 @@ class CustomSearchDelegate extends SearchDelegate {
 
   @override
   Widget buildSuggestions(BuildContext context) {
-    List<String> matchItems = [];
-    for (var item in FoodItems) {
-      if (item.toLowerCase().contains(query.toLowerCase())) {
+    List matchItems = [];
+    for (var item in foodItems) {
+      if (item['description']
+          .toString()
+          .toLowerCase()
+          .contains(query.toLowerCase())) {
         matchItems.add(item);
       }
     }
@@ -247,17 +246,29 @@ class CustomSearchDelegate extends SearchDelegate {
           scrollDirection: Axis.vertical,
           itemBuilder: (context, index) {
             var result = matchItems[index];
-            return Card(
-              elevation: 0,
-              child: ListTile(
-                contentPadding: EdgeInsets.only(left: 15, top: 5, bottom: 5),
-                titleAlignment: ListTileTitleAlignment.center,
-                title: Text(result),
-                titleTextStyle: GoogleFonts.rubik(
-                  color: Colors.white,
-                  fontSize: 18,
+            return GestureDetector(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (_) =>
+                          Restaurant(sellerUid: result['seller']['uid'])),
+                );
+              },
+              child: result['seller']['open']? Card(
+                elevation: 0,
+                child: ListTile(
+                  contentPadding: EdgeInsets.only(left: 15, top: 5, bottom: 5),
+                  titleAlignment: ListTileTitleAlignment.center,
+                  title: Text(
+                    result['description'], // Extracting description from the map
+                    style: GoogleFonts.rubik(
+                      color: Colors.white,
+                      fontSize: 18,
+                    ),
+                  ),
                 ),
-              ),
+              ):Container()
             );
           },
           itemCount: matchItems.length,

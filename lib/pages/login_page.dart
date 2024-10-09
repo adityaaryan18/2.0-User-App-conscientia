@@ -1,3 +1,4 @@
+import 'package:app/pages/forget_password.dart';
 import 'package:app/services/firebase_auth_methods.dart';
 import 'package:app/pages/signup_page.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -16,12 +17,60 @@ class _EmailPasswordLoginState extends State<EmailPasswordLogin> {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
 
-  void loginUser() {
-    FirebaseAuthMethods(FirebaseAuth.instance).loginWithEmail(
-      email: emailController.text,
-      password: passwordController.text,
+  /// Show a loading dialog
+  void showLoadingDialog(BuildContext context) {
+    showDialog(
       context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          child: Container(
+            padding: EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: Colors.black.withOpacity(0.7),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                CircularProgressIndicator(
+                  valueColor: AlwaysStoppedAnimation<Color>(Colors.red),
+                ),
+                SizedBox(height: 15),
+                Text(
+                  "Logging in...",
+                  style: GoogleFonts.rubik(color: Colors.white),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
     );
+  }
+
+  /// Hide the loading dialog
+  void hideLoadingDialog(BuildContext context) {
+    Navigator.of(context).pop();
+  }
+
+  /// Simulate login process with loading animation
+  Future<void> loginUser() async {
+    showLoadingDialog(context); // Show loading spinner
+
+    try {
+      await FirebaseAuthMethods(FirebaseAuth.instance).loginWithEmail(
+        email: emailController.text,
+        password: passwordController.text,
+        context: context,
+      );
+    } catch (e) {
+      print("Login error: $e");
+    } finally {
+      hideLoadingDialog(
+          context); // Hide loading spinner after the process is done
+    }
   }
 
   @override
@@ -69,17 +118,10 @@ class _EmailPasswordLoginState extends State<EmailPasswordLogin> {
                       textAlign: TextAlign.center,
                     ),
                     SizedBox(height: 20),
-                    
                     Padding(
                       padding: const EdgeInsets.all(16.0),
                       child: Column(
                         children: [
-                          // Text(
-                          //   'LOGIN',
-                          //   style: TextStyle(fontSize: 20, color: const Color.fromARGB(255, 255, 255, 255), fontWeight: FontWeight.bold),
-                          // ),
-                          // SizedBox(height: 30),
-
                           TextField(
                             controller: emailController,
                             style: GoogleFonts.rubik(color: Colors.white),
@@ -152,13 +194,20 @@ class _EmailPasswordLoginState extends State<EmailPasswordLogin> {
                             },
                             child: Text(
                               "Not a member yet?\n Embrace the dark side and sign up",
-                              style: TextStyle(color: const Color.fromARGB(255, 255, 255, 255)),
+                              style: TextStyle(
+                                  color:
+                                      const Color.fromARGB(255, 255, 255, 255)),
                               textAlign: TextAlign.center,
                             ),
                           ),
                           TextButton(
                             onPressed: () {
-                              
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => ForgotPasswordPage(),
+                                ),
+                              );
                             },
                             child: Text(
                               'Forgot password?',
@@ -166,7 +215,6 @@ class _EmailPasswordLoginState extends State<EmailPasswordLogin> {
                             ),
                           ),
                           SizedBox(height: 10),
-                          
                         ],
                       ),
                     ),

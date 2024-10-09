@@ -1,11 +1,15 @@
 import 'dart:async';
-import 'package:app/Food/Cart.dart';
-import 'package:app/Food/dishes_page.dart';
+import 'package:app/Food/cart.dart';
+import 'package:app/Food/orders_history.dart';
 import 'package:app/Food/orders_status.dart';
+import 'package:app/Food/restaurant.dart';
 import 'package:app/Food/restaurant_data.dart';
 import 'package:app/Food/searchpage.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+
+import 'package:shimmer/shimmer.dart';
+import 'package:socket_io_client/socket_io_client.dart' as IO;
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key});
@@ -21,9 +25,46 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
   late PageController pageController;
   Timer _timer = Timer(Duration.zero, () {});
 
+  List foodStoreData = [];
+
+  IO.Socket? socket;
+
+  void initializeSocket([String? uid]) {
+    socket = IO.io(
+        'https://socketserver.conscientia.co.in/', <String, dynamic>{
+      'transports': ['websocket'],
+      'autoConnect': false,
+    });
+
+    socket?.connect();
+
+    socket?.onConnect((_) {
+
+      if (uid != null) {
+        socket?.emit('join', uid);
+      }
+    });
+
+    socket?.on('foodStoreData', (data) {
+
+      setState(() {
+        foodStoreData = List.from(data);
+      });
+    });
+
+    socket?.onDisconnect((_) {
+      print('Disconnected from socket');
+    });
+
+    socket?.onError((error) {
+      print('Socket error: $error');
+    });
+  }
+
   @override
   void initState() {
     super.initState();
+    initializeSocket();
     _controller = AnimationController(
       duration: Duration(seconds: 5),
       vsync: this,
@@ -71,6 +112,8 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
+
+
     return SafeArea(
       child: Scaffold(
         //cart icon
@@ -126,8 +169,12 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
                 ),
                 GestureDetector(
                   onTap: () {
-                    Navigator.push(context,
-                        MaterialPageRoute(builder: (context) => Searchpage()));
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => Searchpage(
+                                  stores: foodStoreData,
+                                )));
                   },
                   child: Row(
                     children: [
@@ -198,12 +245,8 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
                     Expanded(
                       child: GestureDetector(
                         onTap: () {
-                          Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (_) => OrdersPage(
-                                    
-                                      )));
+                          Navigator.push(context,
+                              MaterialPageRoute(builder: (_) => OrdersPage()));
                         },
                         child: Container(
                           width: double.infinity,
@@ -229,19 +272,27 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
                       width: 10,
                     ),
                     Expanded(
-                      child: Container(
-                        width: double.infinity,
-                        child: Card(
-                          color: const Color.fromARGB(255, 255, 194, 13),
-                          child: Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: Center(
-                              child: Text(
-                                "Order History",
-                                style: GoogleFonts.rubik(
-                                    color: Color.fromARGB(255, 0, 0, 0),
-                                    fontSize: 15,
-                                    fontWeight: FontWeight.w600),
+                      child: GestureDetector(
+                        onTap: () {
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (_) => OrdersHistory()));
+                        },
+                        child: Container(
+                          width: double.infinity,
+                          child: Card(
+                            color: const Color.fromARGB(255, 255, 194, 13),
+                            child: Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Center(
+                                child: Text(
+                                  "Order History",
+                                  style: GoogleFonts.rubik(
+                                      color: Color.fromARGB(255, 0, 0, 0),
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.w600),
+                                ),
                               ),
                             ),
                           ),
@@ -283,16 +334,18 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
                   ),
                 ),
                 Divider(),
+                // "WHAT ARE YOU LOOKING FOR?" section with shimmer loading
                 Center(
                   child: Padding(
                     padding: EdgeInsets.all(8),
                     child: Text(
                       "WHAT ARE YOU LOOKING FOR?",
                       style: TextStyle(
-                          color: const Color.fromARGB(255, 255, 255, 255),
-                          fontFamily: "Inter",
-                          fontWeight: FontWeight.w400,
-                          letterSpacing: 3),
+                        color: const Color.fromARGB(255, 255, 255, 255),
+                        fontFamily: "Inter",
+                        fontWeight: FontWeight.w400,
+                        letterSpacing: 3,
+                      ),
                     ),
                   ),
                 ),
@@ -301,117 +354,219 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
                 ),
                 Container(
                   height: 120,
-                  child: ListView(
-                      scrollDirection: Axis.horizontal,
-                      children: arrDishes.map((value) {
-                        return Container(
-                            height: 80,
-                            width: 85,
-                            child: Column(
-                              children: [
-                                GestureDetector(
-                                  onTap: () {
-                                    Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                            builder: (_) => DishesPage()));
-                                  },
-                                  child: CircleAvatar(
-                                    radius: 35,
-                                    backgroundColor: Colors.transparent,
-                                    backgroundImage:
-                                        AssetImage(value['image'].toString()),
-                                  ),
+                  child: foodStoreData.isEmpty
+                      ? ListView.builder(
+                          scrollDirection: Axis.horizontal,
+                          itemCount: 5, // Number of shimmer placeholders
+                          itemBuilder: (context, index) {
+                            return Shimmer.fromColors(
+                              baseColor: Colors.grey[800]!,
+                              highlightColor: Colors.grey[500]!,
+                              child: Container(
+                                height: 80,
+                                width: 85,
+                                margin: EdgeInsets.all(8),
+                                decoration: BoxDecoration(
+                                  color: Colors.grey[700],
+                                  borderRadius: BorderRadius.circular(30),
                                 ),
-                                SizedBox(
-                                  height: 1,
-                                ),
-                                Card(
-                                  color: Color.fromARGB(255, 39, 39, 39),
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(6.0),
-                                    child: FittedBox(
-                                      child: Text(
-                                        value['name'].toString(),
-                                        style: GoogleFonts.rubik(
-                                          fontSize: 13,
-                                          color: Colors.white,
+                              ),
+                            );
+                          },
+                        )
+                      : ListView(
+                          scrollDirection: Axis.horizontal,
+                          children: foodStoreData
+                              .expand((store) => store['foodItems'])
+                              .where((foodItem) => foodItem['seller']
+                                  ['open']) // Filter sellers who are open
+                              .map((foodItem) {
+                            return Padding(
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 8.0),
+                              child: Container(
+                                height: 80,
+                                width: 85,
+                                child: Column(
+                                  children: [
+                                    GestureDetector(
+                                      onTap: () {
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (_) => Restaurant(
+                                              sellerUid: foodItem['seller']
+                                                  ['uid'],
+                                            ),
+                                          ),
+                                        );
+                                      },
+                                      child: CircleAvatar(
+                                        radius: 35,
+                                        backgroundColor: Colors.transparent,
+                                        backgroundImage: NetworkImage(
+                                          foodItem['image'].toString(),
                                         ),
                                       ),
                                     ),
-                                  ),
-                                )
-                              ],
-                            ));
-                      }).toList()),
+                                    SizedBox(
+                                      height: 1,
+                                    ),
+                                    Card(
+                                      color: Color.fromARGB(255, 39, 39, 39),
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(6.0),
+                                        child: FittedBox(
+                                          child: Text(
+                                            foodItem['name']
+                                                .toString()
+                                                .toUpperCase(),
+                                            style: GoogleFonts.rubik(
+                                              fontSize: 13,
+                                              color: Colors.white,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    )
+                                  ],
+                                ),
+                              ),
+                            );
+                          }).toList(),
+                        ),
                 ),
+
                 Divider(),
+
                 Center(
                   child: Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: Text(
                       "PARTNER RESTAURANTS",
                       style: TextStyle(
-                          color: Color.fromARGB(255, 255, 255, 255),
-                          fontFamily: "Inter",
-                          fontWeight: FontWeight.w400,
-                          letterSpacing: 3),
+                        color: Color.fromARGB(255, 255, 255, 255),
+                        fontFamily: "Inter",
+                        fontWeight: FontWeight.w400,
+                        letterSpacing: 3,
+                      ),
                     ),
                   ),
                 ),
                 Container(
-                  width: 400,
-                  height: 1150,
-                  child: ListView(
-                    physics: NeverScrollableScrollPhysics(),
-                    children: arrRestaurant.map((e) {
-                      return InkWell(
-                        onTap: () {
-                          Navigator.of(context).pushNamed(e['route'].toString(),
-                              arguments: e['details']);
-                        },
-                        child: Card(
-                          elevation: 4,
-                          margin: EdgeInsets.all(10),
-                          clipBehavior: Clip.antiAlias,
-                          color: Color.fromARGB(75, 255, 154, 13),
-                          child: Column(
-                            children: [
-                              SizedBox(
-                                  height: 150,
-                                  width: double.infinity,
-                                  child: Image(
-                                    image: AssetImage(e['image'].toString()),
-                                    fit: BoxFit.cover,
-                                  )),
-                              Padding(
-                                padding: const EdgeInsets.all(4.0),
-                                child: Text(
-                                  e['name'].toString(),
-                                  style: GoogleFonts.rubik(
-                                      color: Color.fromARGB(255, 255, 255, 255),
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 20,
-                                      letterSpacing: 0.3),
+                  width: double.infinity,
+                  height: foodStoreData.length * 250,
+                  child: foodStoreData.isEmpty
+                      ? ListView.builder(
+                          physics: NeverScrollableScrollPhysics(),
+                          itemCount: 5, // Number of shimmer placeholders
+                          itemBuilder: (context, index) {
+                            return Shimmer.fromColors(
+                              baseColor: Colors.grey[800]!,
+                              highlightColor: Colors.grey[500]!,
+                              child: Container(
+                                margin: EdgeInsets.all(10),
+                                height: 200,
+                                width: double.infinity,
+                                decoration: BoxDecoration(
+                                  color: Colors.grey[700],
+                                  borderRadius: BorderRadius.circular(8),
                                 ),
                               ),
-                              Padding(
-                                padding: const EdgeInsets.only(bottom: 8.0),
-                                child: Text(
-                                  e['variety'].toString(),
-                                  style: TextStyle(
-                                      color: Color.fromARGB(255, 255, 255, 255),
-                                      fontFamily: "Inter",
-                                      fontSize: 13,
-                                      letterSpacing: 1),
-                                ),
+                            );
+                          },
+                        )
+                      : ListView.builder(
+                          physics: NeverScrollableScrollPhysics(),
+                          itemCount: foodStoreData.length,
+                          itemBuilder: (context, index) {
+                            var store = foodStoreData[index];
+
+                            return InkWell(
+                              onTap: () {
+                                if (store['open'] == true) {
+                                  // Pass the necessary values to the Restaurant page
+                                  Navigator.of(context).push(
+                                    MaterialPageRoute(
+                                      builder: (context) => Restaurant(
+                                        sellerUid: store['uid'],
+                                      ),
+                                    ),
+                                  );
+                                }
+                              },
+                              child: Stack(
+                                children: [
+                                  Card(
+                                    elevation: 4,
+                                    margin: EdgeInsets.all(10),
+                                    clipBehavior: Clip.antiAlias,
+                                    color: Color.fromARGB(75, 255, 154, 13),
+                                    child: Column(
+                                      children: [
+                                        SizedBox(
+                                          height: 150,
+                                          width: double.infinity,
+                                          child: Image(
+                                            image: NetworkImage(
+                                                store['banner'].toString()),
+                                            fit: BoxFit.cover,
+                                          ),
+                                        ),
+                                        Padding(
+                                          padding: const EdgeInsets.all(4.0),
+                                          child: Text(
+                                            store['storeName'].toString(),
+                                            style: GoogleFonts.rubik(
+                                              color: Color.fromARGB(
+                                                  255, 255, 255, 255),
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 20,
+                                              letterSpacing: 0.3,
+                                            ),
+                                          ),
+                                        ),
+                                        Padding(
+                                          padding: const EdgeInsets.only(
+                                              bottom: 8.0),
+                                          child: Text(
+                                            '${store['foodItems'].length} Products | '
+                                            '${store['foodItems'].where((item) => item['category'] == 'veg').length} Veg + '
+                                            '${store['foodItems'].where((item) => item['category'] == 'nonveg').length} Non-Veg',
+                                            style: TextStyle(
+                                              color: Color.fromARGB(
+                                                  255, 255, 255, 255),
+                                              fontFamily: "Inter",
+                                              fontSize: 13,
+                                              letterSpacing: 1,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  if (!store['open'])
+                                    Positioned.fill(
+                                      child: Card(
+                                        color: Color.fromARGB(160, 39, 39, 39),
+                                        child: Center(
+                                          child: Text(
+                                            'CLOSED',
+                                            style: TextStyle(
+                                              color: Color.fromARGB(
+                                                  255, 255, 255, 255),
+                                              fontSize: 30,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                ],
                               ),
-                            ],
-                          ),
+                            );
+                          },
                         ),
-                      );
-                    }).toList(),
-                  ),
                 ),
               ],
             ),

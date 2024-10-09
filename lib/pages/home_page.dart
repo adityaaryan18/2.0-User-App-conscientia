@@ -1,16 +1,17 @@
-import 'dart:async';
 import 'dart:convert';
 import 'package:app/Food/home_page.dart';
 import 'package:app/main.dart';
-import 'package:app/pages/comingsoon.dart';
+
 import 'package:app/pages/events_workshop_homepage.dart';
 import 'package:app/Landing/dashboard_page.dart';
 import 'package:app/pages/leaderboard_page.dart';
-import 'package:app/pages/notifications_page.dart';
+import 'package:app/pages/notification_page.dart';
+
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/foundation.dart';
+
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:onesignal_flutter/onesignal_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:salomon_bottom_bar/salomon_bottom_bar.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
@@ -25,7 +26,6 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   int _selectedIndex = 0;
   IO.Socket? socket;
-
 
   @override
   void initState() {
@@ -44,9 +44,9 @@ class _HomePageState extends State<HomePage> {
   final List<Widget> _pages = [
     DashboardPage(),
     EventsWorkshopsHomepage(),
-    Comingsoon(),
+    MyHomePage(),
     LeaderboardPage(),
-    Comingsoon(),
+    AnnouncementPage(),
   ];
 
   void getUserDetails(String uid) async {
@@ -56,35 +56,33 @@ class _HomePageState extends State<HomePage> {
         body: json.encode({'userId': uid}),
       );
 
-      print(response.statusCode);
-
       if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        final user = UserModel.fromJson(data['user']);
+        print("LOOOOL");
 
+        final data = json.decode(response.body);
+
+        print("Data before UserModel: ${data['user']}");
+        print("Data before UserModel: ${data['user']['registeredEvents']}");
+        final user = UserModel.fromJson(data['user']);
+        print("Data AFTER UserModel: ${user}");
+
+        print("User: ${user}");
         context.read<UserProvider>().setUser(user);
         // Initialize socket after fetching user data
         initializeSocket(uid);
-      } else {
-        print('Error: ${response.body}');
-      }
-    } catch (e) {
-      print('Error fetching User data: $e');
-    }
+      } else {}
+    } catch (e) {}
   }
 
   void initializeSocket([String? uid]) {
-    socket = IO.io(
-        'https://socketserver-conscientia2k24-o343q.ondigitalocean.app/',
-        <String, dynamic>{
-          'transports': ['websocket'],
-          'autoConnect': false,
-        });
+    socket = IO.io('https://socketserver.conscientia.co.in/', <String, dynamic>{
+      'transports': ['websocket'],
+      'autoConnect': false,
+    });
 
     socket?.connect();
 
     socket?.onConnect((_) {
-      print('Connected to socket');
       // Subscribe to the user's room or listen for specific events
       if (uid != null) {
         socket?.emit('join', uid);
@@ -92,9 +90,6 @@ class _HomePageState extends State<HomePage> {
     });
 
     socket?.on('userUpdate', (data) {
-      print("Data recieved using socket");
-      print(data);
-
       // Parse the updated user data from the socket response
       final updatedUser = UserModel.fromJson(data);
 
@@ -104,14 +99,10 @@ class _HomePageState extends State<HomePage> {
       if (firebaseUser != null && updatedUser.userId == firebaseUser.uid) {
         // Update the user details only if the Firebase IDs match
         context.read<UserProvider>().setUser(updatedUser);
-      } else {
-        print('Firebase ID mismatch: update ignored.');
-      }
+      } else {}
     });
 
-    socket?.onDisconnect((_) {
-      print('Disconnected from socket');
-    });
+    socket?.onDisconnect((_) {});
   }
 
   @override
@@ -123,6 +114,16 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     final firebaseUser = context.watch<User?>();
+    //Remove this method to stop OneSignal Debugging
+    OneSignal.Debug.setLogLevel(OSLogLevel.verbose);
+
+    OneSignal.initialize("73794b66-90e4-4e8e-978e-db543abae1f4");
+
+// The promptForPushNotificationsWithUserResponse function will show the iOS or Android push notification prompt. We recommend removing the following code and instead using an In-App Message to prompt for notification permission
+    OneSignal.Notifications.requestPermission(true);
+
+    OneSignal.User.addTagWithKey("user", firebaseUser?.uid);
+
     if (firebaseUser != null) {
       final uid = firebaseUser.uid;
       getUserDetails(uid);

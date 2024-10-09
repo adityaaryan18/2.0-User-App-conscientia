@@ -1,10 +1,9 @@
-// import 'dart:convert';
-// import 'package:http/http.dart' as http;
-import 'package:app/Events/team_builder.dart';
-import 'package:app/Events/verify_details.dart';
+import 'package:app/Events/verify_workshop.dart';
+import 'package:app/main.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -14,7 +13,6 @@ class WorkshopPage extends StatefulWidget {
   final String aboutEvent;
   final String prizePool;
   final String eventType;
-
   final eventData;
 
   WorkshopPage({
@@ -49,9 +47,7 @@ class _WorkshopPageState extends State<WorkshopPage> {
   //     body: jsonEncode({'uid': widget.eventData['_id']}),
   //   );
 
-  //   print("Workshops UID Se aagya");
-  //   print(response.statusCode.toString());
-  //   print(response.body);
+
 
   //   if (response.statusCode == 200) {
   //     final responseData = json.decode(response.body);
@@ -67,11 +63,8 @@ class _WorkshopPageState extends State<WorkshopPage> {
 
   @override
   Widget build(BuildContext context) {
-    // if (workshopsUidData.isEmpty) {
-    //   _fetchWorkshopsById();
-    // }
-
-    // final organisersMap = workshopsUidData['workshopOrganizers'] ?? [];
+    final userProvider = context.read<UserProvider>();
+    final user = userProvider.user;
 
     List<String> wordList = _splitEventName(widget.eventName);
     String startTime = widget.eventData['workshopStartDate'];
@@ -81,9 +74,8 @@ class _WorkshopPageState extends State<WorkshopPage> {
 
     // Format the date
     String formatStartDate =
-        DateFormat("d MMM y, h:mm a").format(StartDateTime.toLocal());
-    String formatEndDate =
-        DateFormat("d MMM y, h:mm a").format(EndDateTime.toLocal());
+        DateFormat("d MMM y, h:mm a").format(StartDateTime);
+    String formatEndDate = DateFormat("d MMM y, h:mm a").format(EndDateTime);
 
     // Get screen dimensions
     final screenWidth = MediaQuery.of(context).size.width;
@@ -102,9 +94,8 @@ class _WorkshopPageState extends State<WorkshopPage> {
     }
 
     final String brochureUrl = getBrochureUrl(associatedLinks);
-    final String teamWorkshopRegisterUrl =
-        'https://conscientia.co.in/workshops/details/${widget.eventData['_id']}';
-    print(" URL AAGYA ${brochureUrl}");
+ 
+
 
     return SafeArea(
       bottom: false,
@@ -571,13 +562,22 @@ class _WorkshopPageState extends State<WorkshopPage> {
                                       child: InkWell(
                                         borderRadius: const BorderRadius.all(
                                             Radius.circular(10)),
-                                        onTap: () async {
-                                          final Uri url = Uri.parse(
-                                              teamWorkshopRegisterUrl);
-                                          if (!await launchUrl(url)) {
-                                            throw Exception(
-                                                'Could not launch $url');
-                                          }
+                                        onTap: () {
+                                          Navigator.of(context).push(
+                                            MaterialPageRoute(
+                                              builder: (context) {
+                                                return VerifyWorkshopDetailsPage(
+                                                  eventDetails:
+                                                      widget.eventData,
+                                                  teamMembers: [user?.id],
+                                                  teamLeader: {'_id': user?.id},
+                                                  teamName: user?.firstName,
+                                                  eventType: widget
+                                                      .eventData['workshopType'],
+                                                );
+                                              },
+                                            ),
+                                          );
                                         },
                                         child: const Padding(
                                           padding: EdgeInsets.all(10.0),

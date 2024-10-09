@@ -63,7 +63,7 @@ class WorkshopCard extends StatelessWidget {
                       fontSize: 12,
                     ),
                   ),
-                ),
+                ),  
               )),
               Image.network(
                 imgURL,

@@ -115,9 +115,6 @@ class _EventsWorkshopsHomepageState extends State<EventsWorkshopsHomepage> {
       body: jsonEncode({'key': 'Conscientia2k24'}),
     );
 
-    print("Workshops aagya");
-    print(response.statusCode.toString());
-    print(response.body);
 
     if (response.statusCode == 200) {
       final responseData = json.decode(response.body);
@@ -126,8 +123,7 @@ class _EventsWorkshopsHomepageState extends State<EventsWorkshopsHomepage> {
       });
     } else {
       // Handle error responses here
-      print(
-          'Error: ${response.statusCode}, Message: ${json.decode(response.body)['msg']}');
+ 
     }
   }
 

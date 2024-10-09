@@ -1,5 +1,5 @@
 import 'dart:convert';
-import 'dart:math';
+
 import 'package:app/main.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -20,10 +20,9 @@ class UserProfilePage extends StatelessWidget {
       );
 
       if (response.statusCode == 200) {
-        debugPrint("Name updated successfully");
-        print(response.body);
+
       } else {
-        print('Error: ${response.body}');
+
       }
     } catch (e) {
       print('Error updating name: $e');
@@ -42,8 +41,8 @@ class UserProfilePage extends StatelessWidget {
       );
 
       if (response.statusCode == 200) {
-        debugPrint("Profile photo updated successfully");
-        print(response.body);
+
+
       } else {
         print('Error: ${response.body}');
       }
@@ -67,8 +66,8 @@ class UserProfilePage extends StatelessWidget {
       );
 
       if (response.statusCode == 200) {
-        debugPrint("Mobile details updated successfully");
-        print(response.body);
+
+
       } else {
         print('Error: ${response.body}');
       }
@@ -92,13 +91,12 @@ class UserProfilePage extends StatelessWidget {
       );
 
       if (response.statusCode == 200) {
-        debugPrint("college name updated successfully");
-        print(response.body);
+
       } else {
-        print('Error: ${response.body}');
+
       }
     } catch (e) {
-      print('Error updating college name : $e');
+
     }
   }
 
@@ -117,10 +115,9 @@ class UserProfilePage extends StatelessWidget {
       );
 
       if (response.statusCode == 200) {
-        debugPrint("College id updated successfully");
-        print(response.body);
+
       } else {
-        print('Error: ${response.body}');
+
       }
     } catch (e) {
       print('Error updating college id: $e');
@@ -142,13 +139,12 @@ class UserProfilePage extends StatelessWidget {
       );
 
       if (response.statusCode == 200) {
-        debugPrint("Aadhar updated successfully");
-        print(response.body);
+
       } else {
-        print('Error: ${response.body}');
+
       }
     } catch (e) {
-      print('Error updating Aadhar: $e');
+
     }
   }
 
@@ -260,7 +256,7 @@ class UserProfilePage extends StatelessWidget {
                       value: user?.college ?? '',
                       onTap: () => _showInputDialog(
                         context,
-                        title: "Seems like You are a warrior",
+                        title: "Enter your training ground",
                         labelText: 'College',
                         initialValue: user?.college ?? '',
                         uid: uid!,

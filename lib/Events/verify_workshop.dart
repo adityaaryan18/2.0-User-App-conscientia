@@ -8,14 +8,14 @@ import 'package:provider/provider.dart';
 import 'package:razorpay_flutter/razorpay_flutter.dart';
 
 
-class VerifyDetailsPage extends StatefulWidget {
+class VerifyWorkshopDetailsPage extends StatefulWidget {
   final List teamMembers;
   final teamLeader;
   final teamName;
   final Map eventDetails;
   final String eventType;
 
-  const VerifyDetailsPage({
+  const VerifyWorkshopDetailsPage({
     super.key,
     required this.teamMembers,
     required this.teamLeader,
@@ -25,10 +25,10 @@ class VerifyDetailsPage extends StatefulWidget {
   });
 
   @override
-  _VerifyDetailsPageState createState() => _VerifyDetailsPageState();
+  _VerifyWorkshopDetailsPageState createState() => _VerifyWorkshopDetailsPageState();
 }
 
-class _VerifyDetailsPageState extends State<VerifyDetailsPage> {
+class _VerifyWorkshopDetailsPageState extends State<VerifyWorkshopDetailsPage> {
   late Razorpay _razorpay;
   final TextEditingController _referralController = TextEditingController();
 
@@ -50,13 +50,12 @@ class _VerifyDetailsPageState extends State<VerifyDetailsPage> {
 
   void _handlePaymentSuccess(PaymentSuccessResponse response) async {
     // Payment success, keep the loading dialog visible until backend processing is complete
-
-
+  
     await _sendPaymentDataToBackend(response);
   }
 
   void _handlePaymentError(PaymentFailureResponse response) {
-
+   
 
     // Close the loading dialog in case of failure
     Navigator.of(context).pop();
@@ -121,11 +120,11 @@ class _VerifyDetailsPageState extends State<VerifyDetailsPage> {
 
     final requestBody = {
       'amount':
-          (widget.eventDetails['eventRegistrationFee'] * 1.03 * 100).toInt(),
-      'receipt': 'EVENT_${DateTime.now().millisecondsSinceEpoch}',
+          (widget.eventDetails['workshopFee'] * 1.03 * 100).toInt(),
+      'receipt': 'WORKSHOP_${DateTime.now().millisecondsSinceEpoch}',
       'user': {'_id': user?.id},
       'items': [widget.eventDetails],
-      'category': 'Event'
+      'category': 'WORKSHOP_REGISTRATION'
     };
 
     try {
@@ -146,10 +145,10 @@ class _VerifyDetailsPageState extends State<VerifyDetailsPage> {
 
         final options = {
           'key': 'rzp_live_7uMEh9O3WkPNCb',
-          'amount': (widget.eventDetails['eventRegistrationFee'] * 1.03 * 100)
+          'amount': (widget.eventDetails['workshopFee'] * 1.03 * 100)
               .toInt(),
-          'name': widget.eventDetails['eventName'],
-          'description': 'Event Registration Fee',
+          'name': widget.eventDetails['workshopName'],
+          'description': 'workshop Registration Fee',
           'order_id': orderId,
           'prefill': {
             'contact': user?.mobile.toString(),
@@ -205,11 +204,12 @@ class _VerifyDetailsPageState extends State<VerifyDetailsPage> {
 
       final res = await http.post(
         Uri.parse(
-            'https://conscientia.co.in/api/events/verifyRegistration'),
+            'https://conscientia.co.in/api/workshops/verifyRegistration'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode(requestBody),
       );
 
+  
       if (res.statusCode == 200) {
         final responseData = jsonDecode(res.body);
         if (responseData['isRegistered'] == true) {
@@ -240,7 +240,6 @@ class _VerifyDetailsPageState extends State<VerifyDetailsPage> {
 
   Future<void>_sendPaymentDataToBackend(PaymentSuccessResponse response) async {
 
-     
          
 
     final requestBody = {
@@ -248,7 +247,7 @@ class _VerifyDetailsPageState extends State<VerifyDetailsPage> {
       'oid': response.orderId,
       'signature': response.signature,
       'tname': widget.teamName,
-      'eventId': widget.eventDetails['_id'],
+      'workshopId': widget.eventDetails['_id'],
       'ptype': widget.eventType,
       'members': widget.teamMembers,
       'leaderId': widget.teamLeader['_id'],
@@ -257,10 +256,10 @@ class _VerifyDetailsPageState extends State<VerifyDetailsPage> {
     };
 
     try {
-
+ 
       final res = await http.post(
         Uri.parse(
-            'https://conscientia.co.in/api/events/registerEvent'),
+            'https://conscientia.co.in/api/workshops/registerWorkshop'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode(requestBody),
       );
@@ -274,7 +273,7 @@ class _VerifyDetailsPageState extends State<VerifyDetailsPage> {
           builder: (BuildContext context) {
             return AlertDialog(
               title: Text('Success'),
-              content: Text('Payment successful and event registered'),
+              content: Text('Payment successful and workshop registered'),
               actions: [
                 TextButton(
                   onPressed: () {
@@ -307,7 +306,7 @@ class _VerifyDetailsPageState extends State<VerifyDetailsPage> {
     final userProvider = context.watch<UserProvider>();
     final user = userProvider.user;
 
-    int registrationFee = widget.eventDetails['eventRegistrationFee'] ?? 0;
+    int registrationFee = widget.eventDetails['workshopFee'] ?? 0;
     double convenienceFee = registrationFee * 0.03;
     double totalFee = registrationFee + convenienceFee;
 
@@ -426,9 +425,9 @@ class _VerifyDetailsPageState extends State<VerifyDetailsPage> {
             _buildSectionTitle('Payment Details'),
             _buildDetailBox([
               _buildDetailRow(
-                'Event Name',
+                'Workshop Name',
                 Text(
-                  widget.eventDetails['eventName'] ?? '',
+                  widget.eventDetails['workshopName'] ?? '',
                   style: GoogleFonts.rubik(color: Colors.white, fontSize: 15),
                 ),
               ),

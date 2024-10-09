@@ -1,18 +1,20 @@
 import 'package:app/main.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+
 import 'package:provider/provider.dart';
 import 'package:shimmer/shimmer.dart';
 
-class OrdersPage extends StatefulWidget {
+class OrdersHistory extends StatefulWidget {
   @override
-  _OrdersPageState createState() => _OrdersPageState();
+  _OrdersHistoryState createState() => _OrdersHistoryState();
 }
 
-class _OrdersPageState extends State<OrdersPage> {
+class _OrdersHistoryState extends State<OrdersHistory> {
+
   bool showInProgress = true;
 
-  Widget _buildShimmerCard() {
+    Widget _buildShimmerCard() {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 5.0, vertical: 6),
       child: Shimmer.fromColors(
@@ -50,20 +52,37 @@ class _OrdersPageState extends State<OrdersPage> {
 
     List<dynamic> orders = user.foodOrders;
 
-    // Exclude delivered orders
-    final inProgressOrders = orders
-        .where((order) =>
-            order['status'] != 'rejected' && order['status'] != 'delivered')
-        .toList();
-    final rejectedOrders =
-        orders.where((order) => order['status'] == 'rejected').toList();
+    // If no registered events, show a message
+    if (orders.isEmpty) {
+      return const Center(
+        child: Text(
+          "You don't have any food Orders",
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      );
+    }
 
-    // Sort in-progress orders by status (Ready orders on top)
-    inProgressOrders.sort((a, b) {
-      if (a['status'] == 'ready' && b['status'] != 'ready') return -1;
-      if (a['status'] != 'ready' && b['status'] == 'ready') return 1;
-      return 0;
-    });
+    // Filter orders with status 'delivered'
+    final deliveredOrders =
+        orders.where((order) => order['status'] == 'delivered').toList();
+
+    // If no delivered orders, show a message
+    if (deliveredOrders.isEmpty) {
+      return const Center(
+        child: Text(
+          "No delivered orders yet",
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      );
+    }
 
     return SafeArea(
       child: Scaffold(
@@ -82,7 +101,6 @@ class _OrdersPageState extends State<OrdersPage> {
               padding: const EdgeInsets.all(8.0),
               child: Column(
                 children: [
-                  // AppBar with Back Button
                   AppBar(
                     backgroundColor: Colors.transparent,
                     elevation: 0,
@@ -94,7 +112,7 @@ class _OrdersPageState extends State<OrdersPage> {
                     ),
                     centerTitle: true,
                     title: Text(
-                      "ORDER STATUS",
+                      "DELIVERED ORDERS",
                       style: GoogleFonts.rubik(
                         fontSize: 20,
                         color: Colors.white,
@@ -102,57 +120,10 @@ class _OrdersPageState extends State<OrdersPage> {
                       ),
                     ),
                   ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Expanded(
-                        child: ElevatedButton(
-                          onPressed: () {
-                            setState(() {
-                              showInProgress = true;
-                            });
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: showInProgress
-                                ? const Color.fromARGB(255, 0, 92, 168)
-                                : const Color.fromARGB(255, 93, 93, 93),
-                          ),
-                          child: Text(
-                            'In Progress',
-                            style: GoogleFonts.rubik(
-                                color: Colors.white,
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold),
-                          ),
-                        ),
-                      ),
-                      SizedBox(width: 10),
-                      ElevatedButton(
-                        onPressed: () {
-                          setState(() {
-                            showInProgress = false;
-                          });
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: showInProgress
-                              ? const Color.fromARGB(255, 69, 69, 69)
-                              : Colors.red,
-                        ),
-                        child: Text(
-                          'Rejected',
-                          style: GoogleFonts.rubik(
-                              color: Colors.white,
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold),
-                        ),
-                      ),
-                    ],
-                  ),
                   SizedBox(height: 10),
                   Expanded(
                     child: OrderList(
-                      orders:
-                          showInProgress ? inProgressOrders : rejectedOrders,
+                      orders: deliveredOrders,
                     ),
                   ),
                 ],
@@ -164,7 +135,6 @@ class _OrdersPageState extends State<OrdersPage> {
     );
   }
 }
-
 class OrderList extends StatelessWidget {
   final List orders;
 
@@ -172,11 +142,13 @@ class OrderList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    
     return ListView.builder(
       itemCount: orders.length,
       itemBuilder: (context, index) {
         final order = orders[index];
         return OrderCard(order: order);
+        
       },
     );
   }
@@ -195,8 +167,6 @@ class OrderCard extends StatelessWidget {
         return Colors.green.shade700;
       case 'rejected':
         return Colors.red.shade700;
-      case 'new':
-        return Color.fromARGB(255, 9, 165, 255);
       default:
         return Colors.grey.shade700;
     }
@@ -233,15 +203,13 @@ class OrderCard extends StatelessWidget {
                   Spacer(),
                   Text(
                     '${order['seller']['storeName']}',
-                    style: GoogleFonts.rubik(
-                        color: const Color.fromARGB(255, 255, 255, 255),
-                        fontWeight: FontWeight.bold),
+                    style: GoogleFonts.rubik(color: const Color.fromARGB(255, 255, 255, 255),fontWeight: FontWeight.bold),
                   ),
                 ],
               ),
               const SizedBox(height: 8.0),
               Text(
-                'Convenience Fee: ₹${(order['amount'] * 0.03).toStringAsFixed(2)}',
+                'Convenience Fee: ₹${(order['amount']*0.03).toStringAsFixed(2)}',
                 style: GoogleFonts.rubik(
                   color: Colors.grey.shade400,
                 ),
@@ -325,7 +293,7 @@ class OrderCard extends StatelessWidget {
                             'OTP: ${order['deliveryOTP']}',
                             style: GoogleFonts.rubik(
                               fontWeight: FontWeight.bold,
-                              fontSize: 18,
+                              fontSize: 15,
                               color: const Color.fromARGB(255, 255, 255, 255),
                             ),
                           ),

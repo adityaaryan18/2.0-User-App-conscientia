@@ -45,9 +45,6 @@ class _EventsPageState extends State<EventsPage> {
   //     body: jsonEncode({'uid': widget.eventData['_id']}),
   //   );
 
-  //   print("Workshops UID Se aagya");
-  //   print(response.statusCode.toString());
-  //   print(response.body);
 
   //   if (response.statusCode == 200) {
   //     final responseData = json.decode(response.body);
@@ -83,9 +80,9 @@ class _EventsPageState extends State<EventsPage> {
 
     // Format the date
     String formatStartDate =
-        DateFormat("d MMM y, h:mm a").format(StartDateTime.toLocal());
+        DateFormat("d MMM y, h:mm a").format(StartDateTime);
     String formatEndDate =
-        DateFormat("d MMM y, h:mm a").format(EndDateTime.toLocal());
+        DateFormat("d MMM y, h:mm a").format(EndDateTime);
 
     // Get screen dimensions
     final screenWidth = MediaQuery.of(context).size.width;
@@ -105,7 +102,7 @@ class _EventsPageState extends State<EventsPage> {
 
     final String brochureUrl = getBrochureUrl(associatedLinks);
 
-    print(" URL AAGYA ${brochureUrl}");
+  
 
     return SafeArea(
       bottom: false,
@@ -218,7 +215,7 @@ class _EventsPageState extends State<EventsPage> {
                               widget.eventData['eventType'].toLowerCase() ==
                                       "team"
                                   ? Text(
-                                      "Teamed",
+                                      "Team",
                                       style: TextStyle(
                                         fontSize: screenWidth * 0.045,
                                         color: Colors.white,

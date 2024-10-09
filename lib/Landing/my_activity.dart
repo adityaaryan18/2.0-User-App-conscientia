@@ -1,8 +1,7 @@
 import 'package:app/Landing/my_events.dart';
-import 'package:app/Landing/my_merch.dart';
+
 import 'package:app/Landing/my_workshop.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 class MyActivitySection extends StatefulWidget {
   const MyActivitySection({super.key});
@@ -18,12 +17,18 @@ class _MyActivitySectionState extends State<MyActivitySection> {
       child: Column(
         children: [
            Center(
-            child: Text(
-              "My Events",
-              style: TextStyle(
-                color: Color.fromARGB(255, 255, 255, 255),
-                fontSize: 17,
-                fontWeight: FontWeight.bold,
+            child: Card(
+              color: Color.fromARGB(255, 46, 46, 46),
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                child: Text(
+                  "My Events",
+                  style: TextStyle(
+                    color: Color.fromARGB(255, 255, 255, 255),
+                    fontSize: 17,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ),
             ),
           ),
@@ -33,12 +38,18 @@ class _MyActivitySectionState extends State<MyActivitySection> {
             height: 20,
           ),
             Center(
-            child: Text(
-              "My Workshops",
-              style: TextStyle(
-                color: Color.fromARGB(255, 255, 255, 255),
-                fontSize: 17,
-                fontWeight: FontWeight.bold,
+            child: Card(
+               color: Color.fromARGB(255, 46, 46, 46),
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                child: Text(
+                  "My Workshops",
+                  style: TextStyle(
+                    color: Color.fromARGB(255, 255, 255, 255),
+                    fontSize: 17,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ),
             ),
           ),

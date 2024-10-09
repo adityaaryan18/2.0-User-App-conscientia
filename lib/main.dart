@@ -1,5 +1,4 @@
 import 'package:app/Food/cart_provider.dart';
-import 'package:app/Food/restaurant_route.dart';
 import 'package:app/services/firebase_auth_methods.dart';
 import 'package:app/firebase_options.dart';
 import 'package:app/pages/home_page.dart';
@@ -8,6 +7,7 @@ import 'package:app/pages/signup_page.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:onesignal_flutter/onesignal_flutter.dart';
 import 'package:provider/provider.dart';
 // import 'package:http/http.dart' as http;
 
@@ -17,8 +17,13 @@ void main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
+
+
+
   runApp(const MyApp());
 }
+
+
 
 class MyApp extends StatelessWidget {
   const MyApp({Key? key}) : super(key: key);
@@ -47,7 +52,7 @@ class MyApp extends StatelessWidget {
           EmailPasswordLogin.routeName: (context) => const EmailPasswordLogin(),
         },
         initialRoute: '/',
-        onGenerateRoute: RestaurantRoute.generateRoute,
+
       ),
     );
   }

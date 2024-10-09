@@ -36,6 +36,7 @@ class _UpcomingEventsState extends State<UpcomingEvents> {
         _currentPage,
         duration: const Duration(milliseconds: 500),
         curve: Curves.easeIn,
+        
       );
     });
   }

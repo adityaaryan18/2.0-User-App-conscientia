@@ -1,4 +1,3 @@
-import 'dart:ffi';
 
 import 'package:app/Events/verify_details.dart';
 import 'package:app/main.dart';
@@ -185,22 +184,20 @@ class _TeamBuilderPageState extends State<TeamBuilderPage> {
                                       ),
                                     ),
                                     Text(
-                                      'Add more friends',
+                                      'Add more friends in the home page',
                                       style: TextStyle(
                                         fontSize: 14,
                                         color: Colors.white70,
                                       ),
                                     ),
-                                    ElevatedButton(
-                                      onPressed: () {
-                                        
-                                      },
-                                      child: Text('Add Friends'),
-                                      style: ElevatedButton.styleFrom(
-                                        foregroundColor: Colors.white,
-                                        backgroundColor: widget.colorUp,
+                                    Text(
+                                      '"Create Team" Section',
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        color: Colors.white70,
                                       ),
                                     ),
+                                    
                                   ],
                                 )
                               : Column(

@@ -1,16 +1,21 @@
-import 'package:app/Landing/announcements.dart';
+import 'package:app/Food/orders_status.dart';
+
 import 'package:app/Landing/create_team_section.dart';
 import 'package:app/Landing/fun_events.dart';
 import 'package:app/Landing/my_activity.dart';
-import 'package:app/Landing/order_stat_dash.dart';
+
 import 'package:app/Landing/upcoming_event.dart';
 import 'package:app/Landing/user_card.dart';
 import 'package:app/main.dart';
-import 'package:app/pages/comingsoon.dart';
+
 import 'package:app/pages/my_events_page.dart';
 import 'package:app/pages/my_workshop_page.dart';
+import 'package:app/pages/notification_page.dart';
+import 'package:app/services/firebase_auth_methods.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
+import 'package:onesignal_flutter/onesignal_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:socket_io_client/socket_io_client.dart' as IO;
 
@@ -26,16 +31,20 @@ class DashboardPage extends StatefulWidget {
 class _DashboardPageState extends State<DashboardPage> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   int selectedIndex = 0;
- 
+
+  void signOut() {
+    OneSignal.User.removeTag('user');
+    FirebaseAuthMethods(FirebaseAuth.instance).signOut(context);
+    Navigator.of(context).popUntil((route) => route.isFirst);
+    // Pass only context, no need for named parameter
+  }
+
   @override
   Widget build(BuildContext context) {
     final userProvider = context.watch<UserProvider>();
     final user = userProvider.user;
 
-
     if (user != null) {
-      print('Username: ${user.username}');
-      print('Email: ${user.email}');
       // Use other fields as needed
     }
 
@@ -82,10 +91,9 @@ class _DashboardPageState extends State<DashboardPage> {
                             icon: FluentIcons.toolbox_24_regular,
                             text: 'My Workshop',
                           ),
-
                           _buildDrawerItem(
                             icon: FluentIcons.people_24_regular,
-                            text: 'My Friendlist',
+                            text: 'My Friend list',
                           ),
                           _buildDrawerItem(
                             icon: FluentIcons.person_add_16_filled,
@@ -96,15 +104,14 @@ class _DashboardPageState extends State<DashboardPage> {
                             text: 'My Food Orders',
                           ),
                           const Divider(color: Colors.white),
-
                           _buildDrawerItem(
                             icon: FluentIcons.alert_24_regular,
                             text: 'Announcements',
                           ),
                           const Divider(color: Colors.white),
                           _buildDrawerItem(
-                            icon: FluentIcons.code_16_filled,
-                            text: 'Developers',
+                            icon: FluentIcons.arrow_exit_20_filled,
+                            text: 'Log Out',
                           ),
                         ],
                       ),
@@ -182,7 +189,7 @@ class _DashboardPageState extends State<DashboardPage> {
                       const SizedBox(height: 10),
                       if (selectedIndex == 0) const DashboardSection(),
                       if (selectedIndex == 1) const MyActivitySection(),
-                      if (selectedIndex == 2)  CreateTeamSection(),
+                      if (selectedIndex == 2) CreateTeamSection(),
                     ],
                   ),
                 ),
@@ -235,8 +242,7 @@ class _DashboardPageState extends State<DashboardPage> {
           case 'My Events':
             Navigator.of(context).push(
               MaterialPageRoute(
-                  builder: (context) => MyEventsPage(),
-                  fullscreenDialog: true),
+                  builder: (context) => MyEventsPage(), fullscreenDialog: true),
             );
           case 'My Workshop':
             Navigator.of(context).push(
@@ -245,46 +251,33 @@ class _DashboardPageState extends State<DashboardPage> {
                   fullscreenDialog: true),
             );
 
-          case 'My Friendlist':
-
-          Navigator.of(context).pop();
-          setState(() {
-            selectedIndex=2;
-            
-          });
+          case 'My Friend list':
+            Navigator.of(context).pop();
+            setState(() {
+              selectedIndex = 2;
+            });
 
           case 'Friend Requests':
-          Navigator.of(context).pop();
-          setState(() {
-            selectedIndex=2;
-
-          });
-          
+            Navigator.of(context).pop();
+            setState(() {
+              selectedIndex = 2;
+            });
 
           case 'My Food Orders':
             Navigator.of(context).push(
               MaterialPageRoute(
-                  builder: (context) => Comingsoon(),
-                  fullscreenDialog: true),
+                  builder: (context) => OrdersPage(), fullscreenDialog: true),
             );
-          case 'Merchandise':
-            Navigator.of(context).push(
-              MaterialPageRoute(
-                  builder: (context) => Comingsoon(),
-                  fullscreenDialog: true),
-            );
+
           case 'Announcements':
             Navigator.of(context).push(
               MaterialPageRoute(
-                  builder: (context) => Comingsoon(),
+                  builder: (context) => AnnouncementPage(),
                   fullscreenDialog: true),
             );
-          case 'Developers':
-            Navigator.of(context).push(
-              MaterialPageRoute(
-                  builder: (context) => Comingsoon(),
-                  fullscreenDialog: true),
-            );
+
+          case 'Log Out':
+            signOut();
         }
       },
     );
@@ -299,51 +292,39 @@ class DashboardSection extends StatefulWidget {
 }
 
 class _DashboardSectionState extends State<DashboardSection> {
+  IO.Socket? socket;
 
+  List upcomingEventData = [];
 
-    IO.Socket? socket;
-  
-    List upcomingEventData=[];
-
-  
-    @override
+  @override
   void initState() {
     super.initState();
     initializeSocket();
   }
 
-    void initializeSocket() {
+  void initializeSocket() {
     socket = IO.io(
-        'https://socketserver-conscientia2k24-o343q.ondigitalocean.app/',
-        <String, dynamic>{
-          'transports': ['websocket'],
-          'autoConnect': false,
-        });
+        'https://socketserver.conscientia.co.in/', <String, dynamic>{
+      'transports': ['websocket'],
+      'autoConnect': false,
+    });
 
     socket?.connect();
 
     socket?.onConnect((_) {
-      print('Connected to socket');
       // Subscribe to the user's room or listen for specific events
     });
 
     socket?.on('upcomingevents', (data) {
-      print("Data recieved on dashboooarrrrdd");
-      print(data);
       setState(() {
-        upcomingEventData=data;
+        upcomingEventData = data;
       });
-      
     });
-    }
-
+  }
 
   @override
   Widget build(BuildContext context) {
-
     print('socket data on dashboard Page xyz ${upcomingEventData}');
-
-
 
     return SingleChildScrollView(
       scrollDirection: Axis.vertical,
@@ -357,22 +338,10 @@ class _DashboardSectionState extends State<DashboardSection> {
 
           // User Card User Interface and APIs
           UserCard(),
-
           // OrderStatus Live Update for Users
-          // Padding(
-          //   padding: const EdgeInsets.all(8.0),
-          //   child: Column(
-          //     children: [
-          //       OrderList(),
-          //     ],
-          //   ),
-          // ),
-
           FunEvents(),
 
-          UpcomingEvents(
-            eventData: upcomingEventData
-          ),
+          UpcomingEvents(eventData: upcomingEventData),
 
           // MerchWidget()
         ],

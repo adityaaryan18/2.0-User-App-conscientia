@@ -22,7 +22,7 @@ class _UserCardState extends State<UserCard> {
     "https://firebasestorage.googleapis.com/v0/b/consx-user-app.appspot.com/o/rank7.png?alt=media&token=e69601cb-35aa-4d61-9eb4-50670f6160b9",
     "https://firebasestorage.googleapis.com/v0/b/consx-user-app.appspot.com/o/rank8.png?alt=media&token=3e8c7abc-1324-4c7d-b20d-704b0db065d0",
     "https://firebasestorage.googleapis.com/v0/b/consx-user-app.appspot.com/o/rank9.png?alt=media&token=5ec75bbc-b758-4438-b856-a4055ebb0a63",
-    "https://firebasestorage.googleapis.com/v0/b/consx-user-app.appspot.com/o/rank10.png?alt=media&token=7cd1c7c3-974c-4c05-aa48-8bc469574815",
+    "https://firebasestorage.googleapis.com/v0/b/consx-user-app.appspot.com/o/helmet.png?alt=media&token=3eea62ba-2548-422f-be2a-ce8efa622fac",
   ];
 
   @override
@@ -151,7 +151,7 @@ class _UserCardState extends State<UserCard> {
                                         padding: const EdgeInsets.all(10.0),
                                         child: Center(
                                           child: Text(
-                                            user?.rankName ?? "LOADING",
+                                            user?.rankName.toUpperCase() ?? "LOADING",
                                             style: GoogleFonts.rubik(
                                                 fontWeight: FontWeight.bold,
                                                 color: Colors.red),

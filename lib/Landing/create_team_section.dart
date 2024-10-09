@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:app/Landing/update_user.dart';
 import 'package:app/main.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
@@ -19,14 +20,19 @@ class _CreateTeamSectionState extends State<CreateTeamSection> {
   final textEditingController = TextEditingController();
 
   void addToTeam(String userId, String friendId) async {
+    // Check if user details are complete
+    if (!areDetailsComplete()) {
+      _showIncompleteDetailsDialog(); // Show the dialog if incomplete
+      return; // Exit the function if details are incomplete
+    }
+
     try {
       final response = await http.post(
-        Uri.parse(
-            "https://conscientia.co.in/api/dashboard/addtoteam"),
+        Uri.parse("https://conscientia.co.in/api/dashboard/addtoteam"),
         body: json.encode({'userId': userId, 'friendId': friendId}),
       );
 
-      print('API TO ADD IN TEAM SENT SUCCESSFULLY');
+
 
       if (response.statusCode == 200) {
         final responseData = json.decode(response.body);
@@ -49,6 +55,49 @@ class _CreateTeamSectionState extends State<CreateTeamSection> {
     }
   }
 
+  // Function to check if the user's details are complete
+  bool areDetailsComplete() {
+    final user = context.read<UserProvider>().user;
+    return user?.firstName != null &&
+        user?.lastName != null &&
+        user?.aadhar != null &&
+        user?.college != null &&
+        user?.collegeId != null &&
+        user?.mobile != null;
+  }
+    // Dialog to show when user details are incomplete
+  void _showIncompleteDetailsDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          backgroundColor: Colors.black.withOpacity(0.8),
+          title: Text(
+            'Incomplete Details',
+            style: TextStyle(color: Colors.white),
+          ),
+          content: Text(
+            'Warrior! We need to know who you are. Please complete your details before creating a team.',
+            style: TextStyle(color: Colors.white70),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => UserProfilePage(), // Navigate to profile completion page
+                  ),
+                );
+              },
+              child: Text('OK', style: TextStyle(color: Colors.green)),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   void addToTeamFromPending(String userId, String friendId) async {
     try {
       final response = await http.post(
@@ -56,9 +105,7 @@ class _CreateTeamSectionState extends State<CreateTeamSection> {
             "https://conscientia.co.in/api/dashboard/acceptteam"),
         body: json.encode({'userId': userId, 'friendId': friendId}),
       );
-      print('OYEE API chala gaya');
-      print(response.statusCode);
-      print(response);
+
 
       if (response.statusCode == 200) {
         final responseData = json.decode(response.body);
@@ -126,7 +173,7 @@ class _CreateTeamSectionState extends State<CreateTeamSection> {
   Widget build(BuildContext context) {
     final userProvider = context.watch<UserProvider>();
     final user = userProvider.user;
-    final firebaseUser = context.watch<User?>();
+    final firebaseUser = context.watch<User?>(); 
     final uid = firebaseUser?.uid;
 
     List<dynamic> myAllies = user?.myAllies ?? [];
@@ -162,8 +209,7 @@ class _CreateTeamSectionState extends State<CreateTeamSection> {
                             decoration: InputDecoration(
                               hintText: 'Enter Your Friend Username',
                               hintStyle: TextStyle(color: Colors.white70),
-                              prefixIcon:
-                                  Icon(Icons.search, color: Colors.white70),
+                              prefixIcon: Icon(Icons.search, color: Colors.white70),
                               border: InputBorder.none,
                             ),
                             style: TextStyle(color: Colors.white),
@@ -178,8 +224,7 @@ class _CreateTeamSectionState extends State<CreateTeamSection> {
                         ),
                         color: Colors.red.withOpacity(0.5),
                         child: Padding(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 10.0, vertical: 6),
+                          padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 6),
                           child: GestureDetector(
                             onTap: () {
                               addToTeam(uid!, textEditingController.text);
@@ -195,8 +240,7 @@ class _CreateTeamSectionState extends State<CreateTeamSection> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: [
-                          _buildSectionCard('Your Team', isApprovedSelected,
-                              () {
+                          _buildSectionCard('Your Team', isApprovedSelected, () {
                             setState(() {
                               isApprovedSelected = true;
                             });
@@ -212,19 +256,21 @@ class _CreateTeamSectionState extends State<CreateTeamSection> {
                       if (isApprovedSelected)
                         Column(
                           children: [
-                            FittedBox(child: Text(myAllies.length==0? 'Search Your friend to Add them to your team' : "Add them during Event Registration")),
+                            FittedBox(
+                              child: Text(myAllies.length == 0
+                                  ? 'Search Your friend to Add them to your team'
+                                  : "Add them during Event Registration"),
+                            ),
                             ListView.builder(
                               shrinkWrap: true,
                               physics: NeverScrollableScrollPhysics(),
                               itemCount: myAllies.length,
                               itemBuilder: (context, index) {
-                                final ally =
-                                    myAllies[index] as Map<String, dynamic>;
+                                final ally = myAllies[index] as Map<String, dynamic>;
                                 return _buildPersonCard(
-                                  ally['firstName']?? 'Unknown',
+                                  ally['firstName'] ?? 'Unknown',
                                   ally['username'] ?? 'Unknown',
-                                  ally['profile'] ??
-                                      'assets/images/profile_default.png',
+                                  ally['profile'] ?? 'assets/images/profile_default.png',
                                   isApproved: true,
                                 );
                               },
@@ -234,19 +280,21 @@ class _CreateTeamSectionState extends State<CreateTeamSection> {
                       else
                         Column(
                           children: [
-                            FittedBox(child: Text(myRequests.length==0? "People who sent you request will show up here": "People waiting for your Approval")),
+                            FittedBox(
+                              child: Text(myRequests.length == 0
+                                  ? "People who sent you request will show up here"
+                                  : "People waiting for your Approval"),
+                            ),
                             ListView.builder(
                               shrinkWrap: true,
                               physics: NeverScrollableScrollPhysics(),
                               itemCount: myRequests.length,
                               itemBuilder: (context, index) {
-                                final request =
-                                    myRequests[index] as Map<String, dynamic>;
+                                final request = myRequests[index] as Map<String, dynamic>;
                                 return _buildPersonCard(
-                                  request['firstName']??"Unknown",
+                                  request['firstName'] ?? "Unknown",
                                   request['username'] ?? 'Unknown',
-                                  request['profile'] ??
-                                      'assets/images/profile_default.png',
+                                  request['profile'] ?? 'assets/images/profile_default.png',
                                   isApproved: false,
                                 );
                               },
@@ -263,6 +311,7 @@ class _CreateTeamSectionState extends State<CreateTeamSection> {
       ),
     );
   }
+
 
   Widget _buildSectionCard(String title, bool isSelected, VoidCallback onTap) {
     return GestureDetector(

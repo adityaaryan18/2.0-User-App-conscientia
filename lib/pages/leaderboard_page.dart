@@ -38,7 +38,7 @@ class _LeaderboardPageState extends State<LeaderboardPage> {
 
   void initializeSocket([String? uid]) {
     socket = IO.io(
-        'https://socketserver-conscientia2k24-o343q.ondigitalocean.app/',
+        'https://socketserver.conscientia.co.in/',
         <String, dynamic>{
           'transports': ['websocket'],
           'autoConnect': false,
@@ -47,26 +47,25 @@ class _LeaderboardPageState extends State<LeaderboardPage> {
     socket?.connect();
 
     socket?.onConnect((_) {
-      print('Connected to socket');
+
       if (uid != null) {
         socket?.emit('join', uid);
       }
     });
 
     socket?.on('leaderboard', (data) {
-      print("Data received using socket:");
-      print(data);
+
       setState(() {
         leaderboardData = List<Map<String, dynamic>>.from(data);
       });
     });
 
     socket?.onDisconnect((_) {
-      print('Disconnected from socket');
+
     });
 
     socket?.onError((error) {
-      print('Socket error: $error');
+
     });
   }
 

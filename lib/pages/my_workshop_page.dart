@@ -8,41 +8,46 @@ class MyworkshopsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      extendBodyBehindAppBar: true,  // This allows the app bar to be transparent over the background
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,  // Removes the shadow
-        title: Text(
-          'My workshops',
-          style: GoogleFonts.rubik(
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
-          ),
-        ),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () {
-            Navigator.of(context).pop();  // Go back to the previous page
-          },
-        ),
-      ),
-      body: Stack(
-        fit: StackFit.expand,
-        children: [
-          Image.asset(
-            'assets/images/teams background.png',
-            fit: BoxFit.cover,
-          ),
-          SingleChildScrollView(
-            child: Column(
-              children: [
-                const SizedBox(height: kToolbarHeight + 20),  // To prworkshop content from being hidden behind the app bar
-                MyWorkshop(),
-              ],
+    return SafeArea(
+      child: Scaffold(
+        extendBodyBehindAppBar: true,  // This allows the app bar to be transparent over the background
+        appBar: AppBar(
+            backgroundColor: Colors.black.withOpacity(0.5),
+            elevation: 0,  // Removes the shadow
+            title: Text(
+            'My workshops',
+            style: GoogleFonts.rubik(
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
             ),
           ),
-        ],
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back, color: Colors.white),
+            onPressed: () {
+              Navigator.of(context).pop();  // Go back to the previous page
+            },
+          ),
+        ),
+        body: Stack(
+          fit: StackFit.expand,
+          children: [
+            Image.asset(
+              'assets/images/teams background.png',
+              fit: BoxFit.cover,
+            ),
+            Scaffold(
+              backgroundColor: Colors.black.withOpacity(0.6),
+              body: SingleChildScrollView(
+                child: Column(
+                  children: [
+                    const SizedBox(height: kToolbarHeight + 20),  // To prworkshop content from being hidden behind the app bar
+                    MyWorkshop(),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
